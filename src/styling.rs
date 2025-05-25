@@ -88,6 +88,8 @@ pub struct SegmentStyle {
     pub style: Option<Style>,
     /// Can be referenced by [`GlyphMeta::MagicNumber`].
     pub magic_number: Option<f32>,
+    /// Optional background color.
+    pub background_color: Option<Srgba>,
 }
 
 impl SegmentStyle {
@@ -110,6 +112,7 @@ impl SegmentStyle {
             weight: other.weight.or(self.weight),
             style: other.style.or(self.style),
             magic_number: other.magic_number.or(self.magic_number),
+            background_color: other.background_color.or(self.background_color),
         }
     }
 }
