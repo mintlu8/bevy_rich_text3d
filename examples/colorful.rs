@@ -31,60 +31,68 @@ pub fn main() {
             brightness: 800.,
             ..Default::default()
         })
-        .add_systems(Startup, |mut commands: Commands, mut standard_materials: ResMut<Assets<StandardMaterial>>| {
-            let mat = standard_materials.add(
-                StandardMaterial {
+        .add_systems(
+            Startup,
+            |mut commands: Commands, mut standard_materials: ResMut<Assets<StandardMaterial>>| {
+                let mat = standard_materials.add(StandardMaterial {
                     base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
                     alpha_mode: AlphaMode::Blend,
                     unlit: true,
                     ..Default::default()
-                }
-            );
-            let text = Text3d::parse(
-                "{s-20, s-black:<Time Bomb>}: Deals {orange:**explosion**} damage equal to {red:*fps*}, which is {s-20, s-black, red:{fps}}!", 
-                |s| {
-                    if s == "fps" {
-                        Ok(Text3dSegment::Extract(
-                            commands.spawn((FetchedTextSegment::EMPTY, FetchFPS)).id()
-                        ))
-                    } else {
-                        Err(ParseError::Custom(format!("Bad value {s}.")))
-                    }
-                },
-                |s| Err(ParseError::Custom(format!("Bad style {s}."))),
-            ).unwrap();
-            commands.spawn((
-                text,
-                Text3dStyling {
-                    size: 32.,
-                    color: Srgba::new(0., 1., 1., 1.),
-                    align: TextAlign::Center,
-                    ..Default::default()
-                },
-                Text3dBounds {
-                    width: 400.,
-                },
-                Mesh3d::default(),
-                MeshMaterial3d(mat.clone()),
-            ));
+                });
+                let text = Text3d::parse(
+                    "{s-20, s-black:<Time Bomb>}: Deals {orange:**explosion**} {bg-red:damage} equal to {red:*fps*}, which is {s-20, s-black, red:{fps}}!",
+                    |s| {
+                        if s == "fps" {
+                            Ok(Text3dSegment::Extract(
+                                commands.spawn((FetchedTextSegment::EMPTY, FetchFPS)).id(),
+                            ))
+                        } else {
+                            Err(ParseError::Custom(format!("Bad value {s}.")))
+                        }
+                    },
+                    |s| Err(ParseError::Custom(format!("Bad style {s}."))),
+                )
+                .unwrap();
+                commands.spawn((
+                    text,
+                    Text3dStyling {
+                        size: 32.,
+                        color: Srgba::new(0., 1., 1., 1.),
+                        align: TextAlign::Center,
+                        ..Default::default()
+                    },
+                    Text3dBounds { width: 400. },
+                    Mesh3d::default(),
+                    MeshMaterial3d(mat.clone()),
+                ));
 
-            commands.spawn((
-                Camera3d::default(),
-                Projection::Orthographic(OrthographicProjection::default_3d()),
-                Transform::from_translation(Vec3::new(0., 0., 1.))
-                    .looking_at(Vec3::new(0., 0., 0.), Vec3::Y)
-            ));
-        })
+                commands.spawn((
+                    Camera3d::default(),
+                    Projection::Orthographic(OrthographicProjection::default_3d()),
+                    Transform::from_translation(Vec3::new(0., 0., 1.))
+                        .looking_at(Vec3::new(0., 0., 0.), Vec3::Y),
+                ));
+            },
+        )
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
-        .add_systems(Update, |fps: Res<DiagnosticsStore>, mut query: Query<&mut FetchedTextSegment, With<FetchFPS>>| {
-            let Some(fps) = fps.get(&FrameTimeDiagnosticsPlugin::FPS) else { return; };
-            let Some(fps) = fps.smoothed() else { return; };
-            let fps_text = format!("{:.0}", fps);
-            for mut segment in &mut query {
-                if segment.as_str() != fps_text {
-                    segment.0 = fps_text.clone();
+        .add_systems(
+            Update,
+            |fps: Res<DiagnosticsStore>,
+             mut query: Query<&mut FetchedTextSegment, With<FetchFPS>>| {
+                let Some(fps) = fps.get(&FrameTimeDiagnosticsPlugin::FPS) else {
+                    return;
+                };
+                let Some(fps) = fps.smoothed() else {
+                    return;
+                };
+                let fps_text = format!("{:.0}", fps);
+                for mut segment in &mut query {
+                    if segment.as_str() != fps_text {
+                        segment.0 = fps_text.clone();
+                    }
                 }
-            }
-        })
+            },
+        )
         .run();
 }

@@ -230,132 +230,287 @@ pub fn text_render(
 
                 let fills = attrs.fill.unwrap_or(styling.fill);
                 let stroke = attrs.stroke.or(styling.stroke);
+                let background = attrs.background_color;
 
-                let renders: &[_] = match (fills, stroke) {
-                    (true, None) => &[(None, attrs.fill_color.unwrap_or(styling.color), 0.)],
-                    (false, Some(stroke)) => &[(
-                        Some(stroke),
-                        attrs.stroke_color.unwrap_or(styling.stroke_color),
-                        0.,
-                    )],
-                    (true, Some(stroke)) if styling.stroke_offset > 0.0 => &[
-                        (
-                            None,
+                #[derive(Clone, Copy)]
+                enum RenderType {
+                    Background,
+                    Fill,
+                    Stroke(NonZero<u32>),
+                }
+
+                let mut renders = Vec::new();
+
+                if let Some(bg_color) = background {
+                    renders.push((RenderType::Background, bg_color, -1.0));
+                }
+
+                match (fills, stroke) {
+                    (true, None) => {
+                        renders.push((
+                            RenderType::Fill,
                             attrs.fill_color.unwrap_or(styling.color),
-                            styling.stroke_offset,
-                        ),
-                        (
-                            Some(stroke),
+                            0.,
+                        ));
+                    }
+                    (false, Some(stroke)) => {
+                        renders.push((
+                            RenderType::Stroke(stroke),
                             attrs.stroke_color.unwrap_or(styling.stroke_color),
                             0.,
-                        ),
-                    ],
-                    (true, Some(stroke)) => &[
-                        (
-                            Some(stroke),
+                        ));
+                    }
+                    (true, Some(stroke)) if styling.stroke_offset > 0.0 => {
+                        renders.push((
+                            RenderType::Fill,
+                            attrs.fill_color.unwrap_or(styling.color),
+                            styling.stroke_offset,
+                        ));
+                        renders.push((
+                            RenderType::Stroke(stroke),
+                            attrs.stroke_color.unwrap_or(styling.stroke_color),
+                            0.,
+                        ));
+                    }
+                    (true, Some(stroke)) => {
+                        renders.push((
+                            RenderType::Stroke(stroke),
                             attrs.stroke_color.unwrap_or(styling.stroke_color),
                             -styling.stroke_offset,
-                        ),
-                        (None, attrs.fill_color.unwrap_or(styling.color), 0.),
-                    ],
-                    (false, None) => &[],
-                };
+                        ));
+                        renders.push((
+                            RenderType::Fill,
+                            attrs.fill_color.unwrap_or(styling.color),
+                            0.,
+                        ));
+                    }
+                    (false, None) => {}
+                }
 
-                for (stroke, color, z) in renders.iter().copied() {
-                    let Some((pixel_rect, base)) = atlas
-                        .glyphs
-                        .get(&GlyphEntry {
-                            font: glyph.font_id,
-                            glyph_id: glyph.glyph_id,
-                            size: FloatOrd(glyph.font_size),
-                            weight: styling.weight,
-                            stroke,
-                        })
-                        .copied()
-                        .or_else(|| {
-                            font_system
-                                .db()
-                                .with_face_data(glyph.font_id, |file, _| {
-                                    let Ok(face) = Face::parse(file, 0) else {
-                                        return None;
-                                    };
-                                    cache_glyph(
-                                        scale_factor,
-                                        atlas,
-                                        image,
-                                        &mut tess_commands,
-                                        glyph,
-                                        stroke,
-                                        attrs.weight.unwrap_or(styling.weight),
-                                        face,
-                                    )
-                                })
-                                .flatten()
-                        })
-                    else {
-                        continue;
-                    };
+                for (render_type, color, z) in renders.iter().copied() {
+                    match render_type {
+                        RenderType::Background => {
+                            // Render background as a solid quad
+                            let i = idx as u16 * 4;
+                            indices.extend([i, i + 1, i + 2, i + 1, i + 3, i + 2]);
+                            idx += 1;
 
-                    let i = idx as u16 * 4;
-                    indices.extend([i, i + 1, i + 2, i + 1, i + 3, i + 2]);
-                    idx += 1;
+                            // shift the background quad a bit down
+                            let shift = glyph.font_size / 5.0;
+                            let x0 = glyph.x + dx;
+                            let y0 = glyph.y - run.line_y - shift;
+                            let x1 = glyph.x + glyph.w + dx;
+                            let y1 = glyph.y - run.line_y + run.line_height - shift;
 
-                    let local_x0 = glyph.x + base.x;
-                    let local_x1 = local_x0 + pixel_rect.width() / scale_factor;
+                            positions.extend([[x0, y0, z], [x1, y0, z], [x0, y1, z], [x1, y1, z]]);
+                            normals.extend([[0., 0., 1.]; 4]);
 
-                    let x0 = local_x0 + dx;
-                    let y0 = glyph.y + base.y - run.line_y;
-                    let x1 = local_x1 + dx;
-                    let y1 = y0 + pixel_rect.height() / scale_factor;
-                    positions.extend([[x0, y0, z], [x1, y0, z], [x0, y1, z], [x1, y1, z]]);
+                            // Use UV coordinates pointing to the opaque white region in the atlas (4x4 pixels at top-left)
+                            uv0.extend([[2.0, 2.0]; 4]);
 
-                    normals.extend([[0., 0., 1.]; 4]);
-
-                    // First we cache the pixel position since the texture may be resized.
-                    uv0.extend(corners(pixel_rect));
-
-                    let mut uv1_buffer = [[0., 0.], [0., 0.], [0., 0.], [0., 0.]];
-
-                    for (meta_type, i) in [(styling.uv1.0, 0), (styling.uv1.1, 1)] {
-                        match meta_type {
-                            GlyphMeta::Index => {
-                                for pair in &mut uv1_buffer {
-                                    pair[i] = real_index as f32;
+                            let mut uv1_buffer = [[0., 0.], [0., 0.], [0., 0.], [0., 0.]];
+                            for (meta_type, i) in [(styling.uv1.0, 0), (styling.uv1.1, 1)] {
+                                match meta_type {
+                                    GlyphMeta::Index => {
+                                        for pair in &mut uv1_buffer {
+                                            pair[i] = real_index as f32;
+                                        }
+                                    }
+                                    GlyphMeta::MagicNumber => {
+                                        uv1_buffer[0][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[1][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[2][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[3][i] = attrs.magic_number.unwrap_or(0.);
+                                    }
+                                    _ => {}
                                 }
                             }
-                            GlyphMeta::Advance => {
-                                let x0 = (local_x0 + sum_width) / styling.size;
-                                let x1 = (local_x0 + sum_width) / styling.size;
-                                uv1_buffer[0][i] = x0;
-                                uv1_buffer[1][i] = x1;
-                                uv1_buffer[2][i] = x0;
-                                uv1_buffer[3][i] = x1;
+                            uv1.extend(uv1_buffer);
+                            colors.extend([LinearRgba::from(color).to_f32_array(); 4]);
+                            continue;
+                        }
+                        RenderType::Fill => {
+                            let stroke_opt = None;
+                            let Some((pixel_rect, base)) = atlas
+                                .glyphs
+                                .get(&GlyphEntry {
+                                    font: glyph.font_id,
+                                    glyph_id: glyph.glyph_id,
+                                    size: FloatOrd(glyph.font_size),
+                                    weight: styling.weight,
+                                    stroke: stroke_opt,
+                                })
+                                .copied()
+                                .or_else(|| {
+                                    font_system
+                                        .db()
+                                        .with_face_data(glyph.font_id, |file, _| {
+                                            let Ok(face) = Face::parse(file, 0) else {
+                                                return None;
+                                            };
+                                            cache_glyph(
+                                                scale_factor,
+                                                atlas,
+                                                image,
+                                                &mut tess_commands,
+                                                glyph,
+                                                stroke_opt,
+                                                attrs.weight.unwrap_or(styling.weight),
+                                                face,
+                                            )
+                                        })
+                                        .flatten()
+                                })
+                            else {
+                                continue;
+                            };
+
+                            let i = idx as u16 * 4;
+                            indices.extend([i, i + 1, i + 2, i + 1, i + 3, i + 2]);
+                            idx += 1;
+
+                            let local_x0 = glyph.x + base.x;
+                            let local_x1 = local_x0 + pixel_rect.width() / scale_factor;
+
+                            let x0 = local_x0 + dx;
+                            let y0 = glyph.y + base.y - run.line_y;
+                            let x1 = local_x1 + dx;
+                            let y1 = y0 + pixel_rect.height() / scale_factor;
+                            positions.extend([[x0, y0, z], [x1, y0, z], [x0, y1, z], [x1, y1, z]]);
+
+                            let mut uv1_buffer = [[0., 0.], [0., 0.], [0., 0.], [0., 0.]];
+                            for (meta_type, i) in [(styling.uv1.0, 0), (styling.uv1.1, 1)] {
+                                match meta_type {
+                                    GlyphMeta::Index => {
+                                        for pair in &mut uv1_buffer {
+                                            pair[i] = real_index as f32;
+                                        }
+                                    }
+                                    GlyphMeta::Advance => {
+                                        let local_x0 = glyph.x + base.x;
+                                        let x0 = (local_x0 + sum_width) / styling.size;
+                                        let x1 = (local_x0 + sum_width) / styling.size;
+                                        uv1_buffer[0][i] = x0;
+                                        uv1_buffer[1][i] = x1;
+                                        uv1_buffer[2][i] = x0;
+                                        uv1_buffer[3][i] = x1;
+                                    }
+                                    GlyphMeta::PerGlyphAdvance => {
+                                        let x = (glyph.x
+                                            + base.x
+                                            + pixel_rect.width() / scale_factor / 2.0
+                                            + sum_width)
+                                            / styling.size;
+                                        uv1_buffer[0][i] = x;
+                                        uv1_buffer[1][i] = x;
+                                        uv1_buffer[2][i] = x;
+                                        uv1_buffer[3][i] = x;
+                                    }
+                                    GlyphMeta::MagicNumber => {
+                                        uv1_buffer[0][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[1][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[2][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[3][i] = attrs.magic_number.unwrap_or(0.);
+                                    }
+                                    _ => {}
+                                }
                             }
-                            GlyphMeta::PerGlyphAdvance => {
-                                let x = (glyph.x
-                                    + base.x
-                                    + pixel_rect.width() / scale_factor / 2.0
-                                    + sum_width)
-                                    / styling.size;
-                                uv1_buffer[0][i] = x;
-                                uv1_buffer[1][i] = x;
-                                uv1_buffer[2][i] = x;
-                                uv1_buffer[3][i] = x;
+                            uv1.extend(uv1_buffer);
+                            normals.extend([[0., 0., 1.]; 4]);
+                            uv0.extend(corners(pixel_rect));
+                            colors.extend([LinearRgba::from(color).to_f32_array(); 4]);
+                        }
+                        RenderType::Stroke(stroke_width) => {
+                            let stroke_opt = Some(stroke_width);
+                            let Some((pixel_rect, base)) = atlas
+                                .glyphs
+                                .get(&GlyphEntry {
+                                    font: glyph.font_id,
+                                    glyph_id: glyph.glyph_id,
+                                    size: FloatOrd(glyph.font_size),
+                                    weight: styling.weight,
+                                    stroke: stroke_opt,
+                                })
+                                .copied()
+                                .or_else(|| {
+                                    font_system
+                                        .db()
+                                        .with_face_data(glyph.font_id, |file, _| {
+                                            let Ok(face) = Face::parse(file, 0) else {
+                                                return None;
+                                            };
+                                            cache_glyph(
+                                                scale_factor,
+                                                atlas,
+                                                image,
+                                                &mut tess_commands,
+                                                glyph,
+                                                stroke_opt,
+                                                attrs.weight.unwrap_or(styling.weight),
+                                                face,
+                                            )
+                                        })
+                                        .flatten()
+                                })
+                            else {
+                                continue;
+                            };
+
+                            let i = idx as u16 * 4;
+                            indices.extend([i, i + 1, i + 2, i + 1, i + 3, i + 2]);
+                            idx += 1;
+
+                            let local_x0 = glyph.x + base.x;
+                            let local_x1 = local_x0 + pixel_rect.width() / scale_factor;
+
+                            let x0 = local_x0 + dx;
+                            let y0 = glyph.y + base.y - run.line_y;
+                            let x1 = local_x1 + dx;
+                            let y1 = y0 + pixel_rect.height() / scale_factor;
+                            positions.extend([[x0, y0, z], [x1, y0, z], [x0, y1, z], [x1, y1, z]]);
+
+                            let mut uv1_buffer = [[0., 0.], [0., 0.], [0., 0.], [0., 0.]];
+                            for (meta_type, i) in [(styling.uv1.0, 0), (styling.uv1.1, 1)] {
+                                match meta_type {
+                                    GlyphMeta::Index => {
+                                        for pair in &mut uv1_buffer {
+                                            pair[i] = real_index as f32;
+                                        }
+                                    }
+                                    GlyphMeta::Advance => {
+                                        let x0 = (local_x0 + sum_width) / styling.size;
+                                        let x1 = (local_x0 + sum_width) / styling.size;
+                                        uv1_buffer[0][i] = x0;
+                                        uv1_buffer[1][i] = x1;
+                                        uv1_buffer[2][i] = x0;
+                                        uv1_buffer[3][i] = x1;
+                                    }
+                                    GlyphMeta::PerGlyphAdvance => {
+                                        let x = (glyph.x
+                                            + base.x
+                                            + pixel_rect.width() / scale_factor / 2.0
+                                            + sum_width)
+                                            / styling.size;
+                                        uv1_buffer[0][i] = x;
+                                        uv1_buffer[1][i] = x;
+                                        uv1_buffer[2][i] = x;
+                                        uv1_buffer[3][i] = x;
+                                    }
+                                    GlyphMeta::MagicNumber => {
+                                        uv1_buffer[0][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[1][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[2][i] = attrs.magic_number.unwrap_or(0.);
+                                        uv1_buffer[3][i] = attrs.magic_number.unwrap_or(0.);
+                                    }
+                                    _ => {}
+                                }
                             }
-                            GlyphMeta::MagicNumber => {
-                                uv1_buffer[0][i] = attrs.magic_number.unwrap_or(0.);
-                                uv1_buffer[1][i] = attrs.magic_number.unwrap_or(0.);
-                                uv1_buffer[2][i] = attrs.magic_number.unwrap_or(0.);
-                                uv1_buffer[3][i] = attrs.magic_number.unwrap_or(0.);
-                            }
-                            GlyphMeta::RowX => (),
-                            GlyphMeta::ColY => (),
+                            uv1.extend(uv1_buffer);
+                            normals.extend([[0., 0., 1.]; 4]);
+                            uv0.extend(corners(pixel_rect));
+                            colors.extend([LinearRgba::from(color).to_f32_array(); 4]);
                         }
                     }
-
-                    uv1.extend(uv1_buffer);
-
-                    colors.extend([LinearRgba::from(color).to_f32_array(); 4]);
                 }
                 real_index += 1;
             }

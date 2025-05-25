@@ -33,12 +33,24 @@ impl TextAtlas {
     pub fn new(image: Handle<Image>) -> Self {
         Self {
             image,
+            // Start placing glyphs after the reserved background region (4x4 pixels)
+            pointer: IVec2::new(4 + PADDING as i32, 0),
             ..Default::default()
         }
     }
 
     /// Create an empty [`Image`] filled with transparent white `(255, 255, 255, 0)`.
     pub fn empty_image(width: usize, height: usize) -> Image {
+        let mut data = vec![[255, 255, 255, 0]; width * height];
+
+        // Create a small opaque white region at the top-left for background rendering
+        // Reserve a 4x4 pixel region
+        for y in 0..4.min(height) {
+            for x in 0..4.min(width) {
+                data[y * width + x] = [255, 255, 255, 255]; // Opaque white
+            }
+        }
+
         Image::new(
             Extent3d {
                 width: width as u32,
@@ -46,7 +58,7 @@ impl TextAtlas {
                 depth_or_array_layers: 1,
             },
             TextureDimension::D2,
-            vec![[255, 255, 255, 0]; width * height].into_flattened(),
+            data.into_flattened(),
             TextureFormat::Rgba8Unorm,
             RenderAssetUsages::all(),
         )
@@ -66,7 +78,12 @@ impl TextAtlas {
             return *rect;
         }
         if self.pointer.x as usize + width + PADDING > image.width() as usize {
-            self.pointer.x = 0;
+            // When wrapping to next line, start after the reserved background region
+            self.pointer.x = if self.pointer.y == 0 {
+                4 + PADDING as i32
+            } else {
+                0
+            };
             self.pointer.y += self.descent.max(height) as i32 + PADDING as i32;
             self.descent = 0;
         }
@@ -111,14 +128,30 @@ impl TextAtlas {
 
     /// Clear all cached glyphs and repaint the image as transparent white.
     pub fn clear(&mut self, images: &mut Assets<Image>) {
-        self.pointer = IVec2::ZERO;
+        self.pointer = IVec2::new(4 + PADDING as i32, 0);
         self.glyphs.clear();
         if let Some(img) = images.get_mut(self.image.id()) {
+            let width = img.width() as usize;
+            let height = img.height() as usize;
+
+            // Clear to transparent white
             for chunk in img.data.as_mut().unwrap().chunks_mut(4) {
                 chunk[0] = 255;
                 chunk[1] = 255;
                 chunk[2] = 255;
                 chunk[3] = 0;
+            }
+
+            // Restore the opaque white background region (4x4 pixels at top-left)
+            let data = img.data.as_mut().unwrap();
+            for y in 0..4.min(height) {
+                for x in 0..4.min(width) {
+                    let idx = (y * width + x) * 4;
+                    data[idx] = 255; // R
+                    data[idx + 1] = 255; // G
+                    data[idx + 2] = 255; // B
+                    data[idx + 3] = 255; // A (opaque)
+                }
             }
         }
     }

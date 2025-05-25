@@ -246,6 +246,15 @@ fn parse_style(
         } else {
             stylesheet(style)
         }
+    } else if style.starts_with("bg-") {
+        if let Some(color) = parse_color(style.split_at(3).1) {
+            Ok(SegmentStyle {
+                background_color: Some(color),
+                ..Default::default()
+            })
+        } else {
+            stylesheet(style)
+        }
     } else if let Some(color) = parse_color(style) {
         Ok(SegmentStyle {
             fill_color: Some(color),
