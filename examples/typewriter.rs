@@ -40,7 +40,7 @@ pub fn main() {
         .add_plugins(MaterialPlugin::<ExtendedMaterial<StandardMaterial, TypewriterShader>>::default())
         .add_plugins(Text3dPlugin {
             load_system_fonts: true,
-            asynchronous_load: true,
+            asynchronous_load: false,
             ..Default::default()
         })
         .insert_resource(AmbientLight {
