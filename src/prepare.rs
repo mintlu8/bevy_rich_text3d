@@ -16,7 +16,7 @@ use cosmic_text::{
 
 use crate::{
     render::{cache_glyph, CommandEncoder},
-    Text3dPlugin, TextAtlas,
+    StrokeJoins, Text3dPlugin, TextAtlas,
 };
 
 /// An [`Arc<Mutex>`] around [`cosmic_text::FontSystem`],
@@ -168,6 +168,7 @@ impl TextRenderer {
                                     &mut tess_commands,
                                     glyph,
                                     stroke,
+                                    StrokeJoins::default(),
                                     weight,
                                     face,
                                 );

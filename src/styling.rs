@@ -52,6 +52,8 @@ pub struct Text3dStyling {
     ///
     /// By default this is `-0.5`.
     pub stroke_offset: f32,
+    /// The shape of the stroke line joins
+    pub stroke_joins: StrokeJoins,
 
     /// Determines what to extract as uv1.
     pub uv1: (GlyphMeta, GlyphMeta),
@@ -75,6 +77,7 @@ impl Default for Text3dStyling {
             stroke: Default::default(),
             line_height: 1.0,
             stroke_offset: -0.5,
+            stroke_joins: StrokeJoins::Bevel,
             uv1: (GlyphMeta::Index, GlyphMeta::PerGlyphAdvance),
             tab_width: 4,
         }
@@ -118,6 +121,14 @@ impl SegmentStyle {
             magic_number: other.magic_number.or(self.magic_number),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum StrokeJoins {
+    #[default]
+    Bevel,
+    Miter,
+    Round,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

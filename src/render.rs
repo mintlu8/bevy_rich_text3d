@@ -15,11 +15,11 @@ use cosmic_text::{
     Attrs, Buffer, Family, Metrics, Shaping, Weight, Wrap,
 };
 use std::num::NonZero;
-use zeno::{Cap, Command as ZCommand, Format, Mask, Stroke, Style, Transform, Vector};
+use zeno::{Cap, Command as ZCommand, Format, Join, Mask, Stroke, Style, Transform, Vector};
 
 use crate::{
     fetch::FetchedTextSegment,
-    styling::GlyphEntry,
+    styling::{GlyphEntry, StrokeJoins},
     text3d::{Text3d, Text3dSegment},
     GlyphMeta, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyling, TextAtlas,
     TextAtlasHandle, TextRenderer,
@@ -293,6 +293,7 @@ pub fn text_render(
                                         &mut tess_commands,
                                         glyph,
                                         stroke,
+                                        styling.stroke_joins,
                                         attrs.weight.unwrap_or(styling.weight).into(),
                                         face,
                                     )
@@ -443,6 +444,7 @@ pub(crate) fn cache_glyph(
     tess_commands: &mut CommandEncoder,
     glyph: &cosmic_text::LayoutGlyph,
     stroke: Option<NonZero<u32>>,
+    stroke_joins: StrokeJoins,
     weight: Weight,
     face: Face,
 ) -> Option<(Rect, Vec2)> {
@@ -462,6 +464,11 @@ pub(crate) fn cache_glyph(
                 width: stroke.get() as f32 * unit_per_em / 100.,
                 start_cap: Cap::Round,
                 end_cap: Cap::Round,
+                join: match stroke_joins {
+                    StrokeJoins::Miter => Join::Miter,
+                    StrokeJoins::Round => Join::Round,
+                    _ => Join::Bevel,
+                },
                 ..Default::default()
             }))
             .transform(Some(Transform::scale(
