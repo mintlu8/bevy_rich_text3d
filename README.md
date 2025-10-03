@@ -25,9 +25,15 @@ Add plugins:
 app.add_plugins(Text3dPlugin{
     default_atlas_dimension: (1024, 1024),
     load_system_fonts: true,
-    load_font_directories: vec!["assets/fonts".to_owned()]
     ..Default::default()
-})
+});
+
+// Add fonts via the `LoadFonts` resource.
+app.insert_resource(LoadFonts {
+    font_paths: vec!["assets/roboto.ttf".to_owned()],
+    font_directories: vec!["assets/fonts".to_owned()],
+    ..Default::default()
+});
 ```
 
 Spawn a `Text3d`.
