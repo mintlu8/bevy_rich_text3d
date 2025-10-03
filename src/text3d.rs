@@ -1,6 +1,7 @@
 use bevy::ecs::{
-    component::{Component, HookContext},
+    component::Component,
     entity::Entity,
+    lifecycle::HookContext,
     world::{DeferredWorld, Mut},
 };
 #[cfg(feature = "reflect")]

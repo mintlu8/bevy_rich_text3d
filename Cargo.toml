@@ -1,6 +1,6 @@
 [package]
 name = "bevy_rich_text3d"
-version = "0.4.2"
+version = "0.5.0"
 edition = "2021"
 
 authors = ["Mincong Lu <mintlux667@gmail.com>"]
@@ -15,12 +15,12 @@ keywords = ["bevy", "text", "font"]
 
 [features]
 default = ["2d", "3d"]
-2d = ["bevy/bevy_sprite"]
+2d = ["bevy/bevy_sprite_render"]
 3d = ["bevy/bevy_pbr"]
 reflect = []
 
 [dependencies]
-bevy = { version = "0.16.0", default-features = false, features = [
+bevy = { version = "0.17.0", default-features = false, features = [
   "bevy_log",
   "bevy_image",
   "bevy_render",
@@ -40,6 +40,6 @@ opt-level = 3
 opt-level = 3
 
 [dev-dependencies]
-bevy = "0.16"
-bevy_rectray = "0.3.1"
+bevy = "0.17.0"
+bevy_rectray = "0.4.0"
 fastrand = "2.3.0"

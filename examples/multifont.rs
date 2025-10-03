@@ -3,8 +3,9 @@ use bevy::{
     app::{App, Startup},
     asset::Assets,
     color::{Color, Srgba},
+    light::AmbientLight,
     math::Vec3,
-    pbr::{AmbientLight, MeshMaterial3d, StandardMaterial},
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{
         AlphaMode, Camera3d, Commands, Mesh3d, OrthographicProjection, Projection, ResMut,
         Transform,
@@ -37,7 +38,7 @@ pub fn main() {
             Startup,
             |mut commands: Commands, mut standard_materials: ResMut<Assets<StandardMaterial>>| {
                 let mat = standard_materials.add(StandardMaterial {
-                    base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+                    base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
                     alpha_mode: AlphaMode::Blend,
                     unlit: true,
                     ..Default::default()

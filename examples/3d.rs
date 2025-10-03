@@ -1,21 +1,17 @@
 use std::{f32::consts::PI, num::NonZero};
 
 use bevy::{
+    anti_alias::smaa::{Smaa, SmaaPreset},
     app::{App, Startup},
     asset::Assets,
+    camera::{Camera3d, PerspectiveProjection},
     color::{Color, Srgba},
-    core_pipeline::{
-        core_3d::Camera3d,
-        smaa::{Smaa, SmaaPreset},
-    },
+    light::{AmbientLight, DirectionalLight},
     math::{Quat, Vec2, Vec3},
-    pbr::{AmbientLight, DirectionalLight, MeshMaterial3d, StandardMaterial},
+    mesh::{Mesh3d, Meshable},
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{Commands, Mesh, Plane3d, Projection, ResMut, Transform},
-    render::{
-        alpha::AlphaMode,
-        camera::PerspectiveProjection,
-        mesh::{Mesh3d, Meshable},
-    },
+    render::alpha::AlphaMode,
     DefaultPlugins,
 };
 use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
@@ -42,7 +38,7 @@ fn setup(
     mut standard_materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mat = standard_materials.add(StandardMaterial {
-        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
         alpha_mode: AlphaMode::Mask(0.5),
         unlit: true,
         cull_mode: None,

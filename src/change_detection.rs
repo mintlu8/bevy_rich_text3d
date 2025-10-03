@@ -9,7 +9,7 @@ use std::marker::PhantomData;
 #[cfg(feature = "3d")]
 use bevy::pbr::{Material, MeshMaterial3d};
 #[cfg(feature = "2d")]
-use bevy::sprite::{Material2d, MeshMaterial2d};
+use bevy::sprite_render::{Material2d, MeshMaterial2d};
 use bevy::{
     app::{Plugin, PostUpdate},
     asset::Assets,

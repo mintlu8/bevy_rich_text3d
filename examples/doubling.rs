@@ -8,10 +8,11 @@ use bevy::{
     app::{App, Startup, Update},
     asset::{AssetServer, Assets},
     color::{Color, Srgba},
-    ecs::{event::EventReader, system::Query},
+    ecs::{message::MessageReader, system::Query},
     input::keyboard::{KeyCode, KeyboardInput},
+    light::AmbientLight,
     math::{Vec2, Vec3},
-    pbr::{AmbientLight, MeshMaterial3d, StandardMaterial},
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{
         AlphaMode, Camera3d, Commands, Mesh, Mesh3d, OrthographicProjection, Plane3d, Projection,
         Res, ResMut, Transform,
@@ -45,7 +46,7 @@ fn setup(
     mut standard_materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mat = standard_materials.add(StandardMaterial {
-        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
         alpha_mode: AlphaMode::Blend,
         unlit: true,
         ..Default::default()
@@ -77,7 +78,7 @@ fn setup(
 }
 
 pub fn increment_on_space_press(
-    mut input: EventReader<KeyboardInput>,
+    mut input: MessageReader<KeyboardInput>,
     mut query: Query<&mut Text3dStyling>,
 ) {
     for key in input.read() {

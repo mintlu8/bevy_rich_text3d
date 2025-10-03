@@ -6,8 +6,8 @@ use std::sync::{
 use bevy::{
     app::{App, Startup, Update},
     asset::{AssetId, AssetServer, Assets},
+    camera::Camera2d,
     color::Color,
-    core_pipeline::core_2d::Camera2d,
     ecs::{
         component::Component,
         entity::Entity,
@@ -15,13 +15,14 @@ use bevy::{
         system::{Local, Query},
     },
     image::Image,
+    light::AmbientLight,
     math::{Vec2, Vec3},
-    pbr::AmbientLight,
+    mesh::Mesh2d,
     prelude::{
         Commands, Mesh, OrthographicProjection, Plane3d, Projection, Res, ResMut, Transform,
     },
-    render::mesh::Mesh2d,
-    sprite::{AlphaMode2d, ColorMaterial, MeshMaterial2d, Sprite},
+    sprite::Sprite,
+    sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     time::{Time, Virtual},
     DefaultPlugins,
 };
@@ -117,7 +118,7 @@ pub fn main() {
              server: Res<AssetServer>,
              mut standard_materials: ResMut<Assets<ColorMaterial>>| {
                 let mat = standard_materials.add(ColorMaterial {
-                    texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+                    texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
                     alpha_mode: AlphaMode2d::Blend,
                     ..Default::default()
                 });

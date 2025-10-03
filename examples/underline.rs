@@ -5,14 +5,14 @@ use std::num::NonZero;
 use bevy::{
     app::{App, Startup, Update},
     asset::Assets,
+    camera::Camera2d,
     color::{Color, Srgba},
-    core_pipeline::core_2d::Camera2d,
     ecs::{hierarchy::ChildOf, query::Changed, system::Query},
+    light::AmbientLight,
     math::{Vec2, Vec3},
-    pbr::AmbientLight,
+    mesh::Mesh2d,
     prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
-    render::mesh::Mesh2d,
-    sprite::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
+    sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     DefaultPlugins,
 };
 use bevy_rectray::{
@@ -58,7 +58,7 @@ fn rectray_sync(
 
 fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMaterial>>) {
     let mat = standard_materials.add(ColorMaterial {
-        texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+        texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
         alpha_mode: AlphaMode2d::Blend,
         ..Default::default()
     });

@@ -3,15 +3,15 @@ use std::num::NonZero;
 use bevy::{
     app::{App, Startup},
     asset::{AssetServer, Assets},
+    camera::Camera2d,
     color::{Color, Srgba},
-    core_pipeline::core_2d::Camera2d,
+    light::AmbientLight,
     math::{Vec2, Vec3},
-    pbr::AmbientLight,
+    mesh::Mesh2d,
     prelude::{
         Commands, Mesh, OrthographicProjection, Plane3d, Projection, Res, ResMut, Transform,
     },
-    render::mesh::Mesh2d,
-    sprite::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
+    sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     DefaultPlugins,
 };
 use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
@@ -38,7 +38,7 @@ fn setup(
     mut standard_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let mat = standard_materials.add(ColorMaterial {
-        texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+        texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
         alpha_mode: AlphaMode2d::Blend,
         ..Default::default()
     });

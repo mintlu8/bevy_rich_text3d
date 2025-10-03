@@ -2,8 +2,9 @@ use bevy::{
     app::{App, PostStartup, Startup, Update},
     asset::Assets,
     color::{Color, Srgba},
+    light::AmbientLight,
     math::Vec3,
-    pbr::{AmbientLight, MeshMaterial3d, StandardMaterial},
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{
         AlphaMode, Camera3d, Commands, Component, Entity, Local, Mesh3d, OrthographicProjection,
         Projection, Query, Res, ResMut, Resource, Transform,

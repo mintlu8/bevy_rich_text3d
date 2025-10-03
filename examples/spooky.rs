@@ -2,17 +2,16 @@ use bevy::{
     app::{App, Startup},
     asset::{Asset, Assets},
     color::Color,
+    light::AmbientLight,
     math::Vec3,
-    pbr::{
-        AmbientLight, ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d,
-        StandardMaterial,
-    },
+    pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
     prelude::{
         AlphaMode, Camera3d, Commands, Mesh3d, OrthographicProjection, Projection, ResMut,
         Transform,
     },
     reflect::TypePath,
-    render::render_resource::{AsBindGroup, ShaderRef},
+    render::render_resource::AsBindGroup,
+    shader::ShaderRef,
     DefaultPlugins,
 };
 use bevy_rich_text3d::{GlyphMeta, Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
@@ -51,7 +50,7 @@ pub fn main() {
             let mat = mats.add(
                 ExtendedMaterial {
                     base: StandardMaterial {
-                        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone_weak()),
+                        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
                         alpha_mode: AlphaMode::Blend,
                         unlit: true,
                         ..Default::default()

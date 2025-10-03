@@ -33,7 +33,7 @@ use bevy::{
         world::Ref,
     },
     image::Image,
-    transform::TransformSystem,
+    transform::TransformSystems,
     window::{PrimaryWindow, Window},
 };
 
@@ -142,10 +142,12 @@ impl Plugin for Text3dPlugin {
         app.init_resource::<LoadFonts>();
         app.insert_resource::<Text3dPlugin>(self.clone());
         let (x, y) = self.default_atlas_dimension;
-        app.world_mut()
+        let _ = app
+            .world_mut()
             .resource_mut::<Assets<Image>>()
             .insert(&TextAtlas::DEFAULT_IMAGE, TextAtlas::empty_image(x, y));
-        app.world_mut()
+        let _ = app
+            .world_mut()
             .resource_mut::<Assets<TextAtlas>>()
             .insert(AssetId::default(), TextAtlas::new(TextAtlas::DEFAULT_IMAGE));
         app.add_systems(First, synchronize_scale_factor);
@@ -163,13 +165,12 @@ impl Plugin for Text3dPlugin {
                 .in_set(Text3dSet)
                 .before(TouchMaterialSet),
         );
-        app.configure_sets(
-            PostUpdate,
-            Text3dSet.before(TransformSystem::TransformPropagate),
-        );
+        app.configure_sets(PostUpdate, Text3dSet.before(TransformSystems::Propagate));
         app.configure_sets(PostUpdate, TouchMaterialSet.in_set(Text3dSet));
         #[cfg(feature = "2d")]
-        app.add_plugins(TouchTextMaterial2dPlugin::<bevy::sprite::ColorMaterial>::default());
+        app.add_plugins(TouchTextMaterial2dPlugin::<
+            bevy::sprite_render::ColorMaterial,
+        >::default());
         #[cfg(feature = "3d")]
         app.add_plugins(TouchTextMaterial3dPlugin::<bevy::pbr::StandardMaterial>::default());
 

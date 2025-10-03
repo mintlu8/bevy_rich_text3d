@@ -7,7 +7,7 @@ use bevy::{
     },
     image::Image,
     math::{FloatOrd, IVec2, Rect, Vec2, Vec3, Vec4},
-    render::mesh::{Indices, Mesh, Mesh2d, Mesh3d, PrimitiveTopology, VertexAttributeValues},
+    mesh::{Indices, Mesh, Mesh2d, Mesh3d, PrimitiveTopology, VertexAttributeValues},
 };
 use cosmic_text::{
     ttf_parser::{Face, GlyphId},
@@ -88,8 +88,8 @@ pub fn text_render(
     // Add asynchronously drawn text.
     for (id, atlas, image) in lock.queue.drain(..) {
         let img_id = atlas.image.id();
-        images.insert(img_id, image);
-        atlases.insert(id, atlas);
+        let _ = images.insert(img_id, image);
+        let _ = atlases.insert(id, atlas);
         redraw = true;
     }
     let font_system = &mut lock.font_system;
