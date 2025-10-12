@@ -198,6 +198,7 @@ impl From<CosmicWeight> for Weight {
 
 /// Type of joins between curves.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub enum StrokeJoin {
     #[default]
     Round,

@@ -55,9 +55,10 @@ impl FetchedTextSegment {
 #[derive(Component)]
 #[require(FetchedTextSegment)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-#[cfg_attr(feature = "reflect", reflect(Component))]
+#[cfg_attr(feature = "reflect", reflect(Component, from_reflect = false))]
 pub struct TextFetch {
     entity: Entity,
+    #[cfg_attr(feature = "reflect", reflect(ignore))]
     fetch: Box<dyn FnMut(EntityRef) -> Option<String> + Send + Sync>,
 }
 

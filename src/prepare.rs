@@ -32,12 +32,12 @@ impl TextRenderer {
     // Methods uses `mut` to deter `Res` usage as that would block.
 
     /// Obtain the underlying [`FontSystem`].
-    pub fn lock(&mut self) -> FontSystemGuard {
+    pub fn lock(&mut self) -> FontSystemGuard<'_> {
         FontSystemGuard(self.0.lock().unwrap())
     }
 
     /// Obtain the underlying [`FontSystem`] if not loading.
-    pub fn try_lock(&mut self) -> Option<FontSystemGuard> {
+    pub fn try_lock(&mut self) -> Option<FontSystemGuard<'_>> {
         self.0.try_lock().ok().map(FontSystemGuard)
     }
 }
@@ -76,7 +76,7 @@ pub struct DrawStyle {
     pub style: Style,
 }
 
-pub(crate) fn family(name: &str) -> Family {
+pub(crate) fn family(name: &str) -> Family<'_> {
     match name {
         "" | "serif" => Family::Serif,
         "sans-serif" => Family::SansSerif,
@@ -88,7 +88,7 @@ pub(crate) fn family(name: &str) -> Family {
 }
 
 impl DrawStyle {
-    pub fn as_attrs(&self) -> Attrs {
+    pub fn as_attrs(&self) -> Attrs<'_> {
         Attrs::new()
             .family(family(&self.family))
             .weight(self.weight)
