@@ -7,8 +7,8 @@
 }
 #import bevy_render::color_operations::hsv_to_rgb;
 
-@group(2) @binding(100) var<uniform> since: f32;
-@group(2) @binding(101) var<uniform> speed: f32;
+@group(#{MATERIAL_BIND_GROUP}) @binding(100) var<uniform> since: f32;
+@group(#{MATERIAL_BIND_GROUP}) @binding(101) var<uniform> speed: f32;
 
 @fragment
 fn fragment(in: VertexOutput, @builtin(front_facing) is_front: bool,) -> FragmentOutput {
