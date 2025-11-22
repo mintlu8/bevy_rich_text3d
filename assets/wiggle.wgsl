@@ -7,8 +7,8 @@
     view_transformations::position_world_to_clip,
 }
 
-@group(2) @binding(100) var<uniform> frequency: f32;
-@group(2) @binding(101) var<uniform> intensity: f32;
+@group(#{MATERIAL_BIND_GROUP}) @binding(100) var<uniform> frequency: f32;
+@group(#{MATERIAL_BIND_GROUP}) @binding(101) var<uniform> intensity: f32;
 
 
 @vertex
