@@ -110,7 +110,8 @@ This is a band-aid solution intended to be removed later as we wait for a fix up
 |------|------------------|
 | 0.15 | 0.1-0.2          |
 | 0.16 | 0.3-0.4          |
-| 0.17 | 0.5-latest       |
+| 0.17 | 0.5.             |
+| 0.18 | 0.6-latest       |
 
 ## License
 
