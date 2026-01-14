@@ -6,7 +6,7 @@ use bevy::{
     camera::Camera2d,
     color::{Color, Srgba},
     image::Image,
-    light::AmbientLight,
+    light::GlobalAmbientLight,
     math::{Vec2, Vec3},
     mesh::Mesh2d,
     prelude::{
@@ -26,7 +26,7 @@ pub fn main() {
             sync_scale_factor_with_main_window: false,
             ..Default::default()
         })
-        .insert_resource(AmbientLight {
+        .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
             ..Default::default()

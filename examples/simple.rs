@@ -5,7 +5,7 @@ use bevy::{
     asset::{AssetServer, Assets},
     camera::Camera2d,
     color::{Color, Srgba},
-    light::AmbientLight,
+    light::GlobalAmbientLight,
     math::{Vec2, Vec3},
     mesh::Mesh2d,
     prelude::{
@@ -23,7 +23,7 @@ pub fn main() {
             load_system_fonts: true,
             ..Default::default()
         })
-        .insert_resource(AmbientLight {
+        .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
             ..Default::default()

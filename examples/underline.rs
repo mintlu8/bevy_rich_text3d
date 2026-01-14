@@ -8,7 +8,7 @@ use bevy::{
     camera::Camera2d,
     color::{Color, Srgba},
     ecs::{hierarchy::ChildOf, query::Changed, system::Query},
-    light::AmbientLight,
+    light::GlobalAmbientLight,
     math::{Vec2, Vec3},
     mesh::Mesh2d,
     prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
@@ -31,7 +31,7 @@ pub fn main() {
             ..Default::default()
         })
         .add_plugins(RectrayPlugin)
-        .insert_resource(AmbientLight {
+        .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
             ..Default::default()

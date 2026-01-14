@@ -15,7 +15,7 @@ use bevy::{
         system::{Local, Query},
     },
     image::Image,
-    light::AmbientLight,
+    light::GlobalAmbientLight,
     math::{Vec2, Vec3},
     mesh::Mesh2d,
     prelude::{
@@ -59,7 +59,7 @@ pub fn main() {
             font_paths: vec!["./assets/Roboto-Regular.ttf".into()],
             ..Default::default()
         })
-        .insert_resource(AmbientLight {
+        .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
             ..Default::default()

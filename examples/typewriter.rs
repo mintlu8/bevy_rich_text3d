@@ -2,7 +2,7 @@ use bevy::{
     app::{App, Startup},
     asset::{Asset, Assets},
     color::Color,
-    light::AmbientLight,
+    light::GlobalAmbientLight,
     math::Vec3,
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
     prelude::{
@@ -44,7 +44,7 @@ pub fn main() {
             asynchronous_load: true,
             ..Default::default()
         })
-        .insert_resource(AmbientLight {
+        .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
             ..Default::default()

@@ -6,7 +6,7 @@ use bevy::{
     asset::Assets,
     camera::{Camera3d, PerspectiveProjection},
     color::{Color, Srgba},
-    light::{AmbientLight, DirectionalLight},
+    light::{DirectionalLight, GlobalAmbientLight},
     math::{Quat, Vec2, Vec3},
     mesh::{Mesh3d, Meshable},
     pbr::{MeshMaterial3d, StandardMaterial},
@@ -23,7 +23,7 @@ pub fn main() {
             load_system_fonts: true,
             ..Default::default()
         })
-        .insert_resource(AmbientLight {
+        .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
             ..Default::default()
@@ -128,6 +128,7 @@ fn setup(
             aspect_ratio: 1.0,
             near: 0.1,
             far: 1000.,
+            ..Default::default()
         }),
         Transform::from_translation(Vec3::new(6., 4., 6.))
             .looking_at(Vec3::new(0., 0., 0.), Vec3::Y),
