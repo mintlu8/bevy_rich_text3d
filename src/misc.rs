@@ -4,7 +4,6 @@ use bevy::{
 };
 use cosmic_text::{Style as CosmicStyle, Weight as CosmicWeight};
 use std::ops::{Deref, DerefMut};
-use zeno::Join;
 
 #[cfg(feature = "reflect")]
 use bevy::{
@@ -44,9 +43,9 @@ pub enum GlyphMeta {
     /// Returns x position in `em` of the center of a glyph as if the text is rendered in a single line.
     PerGlyphAdvance,
     /// The `uv.x` as if the text block is a rectangular sprite.
-    RowX,
+    UvX,
     /// The `uv.y` as if the text block is a rectangular sprite.
-    ColY,
+    UvY,
     /// The [`SegmentStyle::magic_number`](crate::SegmentStyle::magic_number) field
     MagicNumber,
 }
@@ -196,7 +195,11 @@ impl From<CosmicWeight> for Weight {
     }
 }
 
-/// Type of joins between curves.
+/// Specifies how corners are drawn when a shape is stroked.
+///
+/// Join affects the four corners of a stroked rectangle, and the connected segments in a stroked path.
+///
+/// Usually [`StrokeJoin::Round`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub enum StrokeJoin {
@@ -206,12 +209,12 @@ pub enum StrokeJoin {
     Bevel,
 }
 
-impl From<StrokeJoin> for Join {
+impl From<StrokeJoin> for tiny_skia::LineJoin {
     fn from(val: StrokeJoin) -> Self {
         match val {
-            StrokeJoin::Round => Join::Round,
-            StrokeJoin::Bevel => Join::Bevel,
-            StrokeJoin::Miter => Join::Miter,
+            StrokeJoin::Round => tiny_skia::LineJoin::Round,
+            StrokeJoin::Bevel => tiny_skia::LineJoin::Bevel,
+            StrokeJoin::Miter => tiny_skia::LineJoin::Miter,
         }
     }
 }

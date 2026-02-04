@@ -9,11 +9,9 @@ use bevy::{
     math::{FloatOrd, IVec2, Rect, Vec2, Vec3, Vec4},
     mesh::{Indices, Mesh, Mesh2d, Mesh3d, PrimitiveTopology, VertexAttributeValues},
 };
-use cosmic_text::{
-    ttf_parser::{Face, GlyphId},
-    Attrs, Buffer, Family, FontSystem, LayoutGlyph, Metrics, Shaping, Weight, Wrap,
-};
+use cosmic_text::{Attrs, Buffer, Family, FontSystem, LayoutGlyph, Metrics, Shaping, Weight, Wrap};
 use std::num::NonZero;
+use ttf_parser::{Face, GlyphId};
 
 use crate::{
     fetch::FetchedTextSegment,
@@ -21,7 +19,7 @@ use crate::{
     line::LineRun,
     mesh_util::ExtractedMesh,
     styling::GlyphEntry,
-    tess::CommandEncoder,
+    tess::PathEncoder,
     text3d::{Text3d, Text3dSegment},
     SegmentStyle, StrokeJoin, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyling,
     TextAtlas, TextAtlasHandle, TextRenderer,
@@ -194,7 +192,6 @@ pub fn text_render(
         let mut advance = 0.0f32;
         let mut real_index = 0;
 
-        let mut tess_commands = CommandEncoder::default();
         let mut height = 0.0f32;
 
         let mut min_x = f32::MAX;
@@ -231,7 +228,6 @@ pub fn text_render(
                                 &styling,
                                 atlas,
                                 image,
-                                &mut tess_commands,
                                 glyph,
                                 attrs,
                                 stroke,
@@ -280,7 +276,6 @@ pub fn text_render(
                                 scale_factor,
                                 atlas,
                                 image,
-                                &mut tess_commands,
                                 attrs,
                                 &styling,
                                 stroke,
@@ -366,7 +361,6 @@ fn get_atlas_rect(
     styling: &Text3dStyling,
     atlas: &mut TextAtlas,
     image: &mut Image,
-    tess_commands: &mut CommandEncoder,
     glyph: &LayoutGlyph,
     attrs: &SegmentStyle,
     stroke: Option<NonZero<u32>>,
@@ -393,7 +387,6 @@ fn get_atlas_rect(
                         scale_factor,
                         atlas,
                         image,
-                        tess_commands,
                         glyph,
                         stroke,
                         styling.stroke_join,
@@ -410,7 +403,6 @@ pub(crate) fn cache_glyph(
     scale_factor: f32,
     atlas: &mut TextAtlas,
     image: &mut Image,
-    tess_commands: &mut CommandEncoder,
     glyph: &cosmic_text::LayoutGlyph,
     stroke: Option<NonZero<u32>>,
     stroke_join: StrokeJoin,
@@ -426,9 +418,9 @@ pub(crate) fn cache_glyph(
         stroke,
         join: stroke_join,
     };
-    tess_commands.commands.clear();
-    face.outline_glyph(GlyphId(glyph.glyph_id), tess_commands)?;
-    let stroke = stroke.map(|x| x.get() as f32 * unit_per_em / 100.);
+    let mut tess_commands = PathEncoder::default();
+    face.outline_glyph(GlyphId(glyph.glyph_id), &mut tess_commands)?;
+    let stroke = stroke.map(|x| x.get() as f32 * glyph.font_size / 100.);
     let scale = glyph.font_size / unit_per_em * scale_factor;
     tess_commands.tess_glyph(stroke, scale, atlas, image, entry)
 }

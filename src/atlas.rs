@@ -69,7 +69,6 @@ impl TextAtlas {
         base: Vec2,
         width: usize,
         height: usize,
-        mut draw: impl FnMut(&mut [u8], usize) -> IVec2,
     ) -> Rect {
         if let Some((rect, _)) = self.glyphs.get(&glyph) {
             return *rect;
@@ -101,11 +100,7 @@ impl TextAtlas {
                 data![i * 4 + 2] = 255;
             }
         };
-        let w = image.width() as usize;
-        let dimension = draw(
-            &mut data![(self.pointer.y as usize * w + self.pointer.x as usize) * 4..],
-            w * 4,
-        );
+        let dimension = IVec2::new(width as i32, height as i32);
 
         let output = Rect {
             min: self.pointer.as_vec2(),

@@ -94,12 +94,12 @@ impl<'t> ExtractedMesh<'t> {
     pub fn post_process_uv1(&mut self, styling: &Text3dStyling, min: Vec2, dimension: Vec2) {
         for (meta_type, i) in [(styling.uv1.0, 0), (styling.uv1.1, 1)] {
             match meta_type {
-                GlyphMeta::RowX => {
+                GlyphMeta::UvX => {
                     for (uv1, position) in self.uv1.iter_mut().zip(self.positions.iter()) {
                         uv1[i] = (position[0] - min.x) / dimension.x;
                     }
                 }
-                GlyphMeta::ColY => {
+                GlyphMeta::UvY => {
                     for (uv1, position) in self.uv1.iter_mut().zip(self.positions.iter()) {
                         uv1[i] = (position[1] - min.y) / dimension.y;
                     }
@@ -199,8 +199,8 @@ impl<'t> ExtractedMesh<'t> {
                     uv1_buffer[2][i] = magic_number;
                     uv1_buffer[3][i] = magic_number;
                 }
-                GlyphMeta::RowX => (),
-                GlyphMeta::ColY => (),
+                GlyphMeta::UvX => (),
+                GlyphMeta::UvY => (),
             }
         }
 

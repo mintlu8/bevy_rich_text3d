@@ -69,7 +69,7 @@ pub fn main() {
                 Text3d::new(include_str!("lorem.txt")),
                 Text3dStyling {
                     align: TextAlign::Left,
-                    uv1: (GlyphMeta::RowX, GlyphMeta::ColY),
+                    uv1: (GlyphMeta::UvX, GlyphMeta::UvY),
                     ..Default::default()
                 },
                 Text3dBounds { width: 500. },

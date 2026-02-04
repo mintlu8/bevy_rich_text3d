@@ -120,7 +120,7 @@ pub struct LoadFonts {
 impl Default for Text3dPlugin {
     fn default() -> Self {
         Self {
-            default_atlas_dimension: (512, 512),
+            default_atlas_dimension: (1024, 1024),
             scale_factor: 1.0,
             sync_scale_factor_with_main_window: true,
             load_system_fonts: false,

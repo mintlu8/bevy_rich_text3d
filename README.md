@@ -67,10 +67,9 @@ See documentation on `Text3d::parse` for up-to-date syntax.
 
 Cosmic text is used for layout.
 
-* `zeno`
+* `tiny_skia`
 
-Used for tesselation, this is the same render engine as `bevy_text`, `cosmic_text` and `swash`.
-We use this crate directly since we do not use `swash`.
+Used for tesselation.
 
 * `bevy`
 

@@ -25,7 +25,7 @@ pub fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(Text3dPlugin {
-            default_atlas_dimension: (1024, 512),
+            default_atlas_dimension: (2048, 512),
             scale_factor: 2.,
             load_system_fonts: true,
             ..Default::default()

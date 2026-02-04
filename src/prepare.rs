@@ -10,11 +10,10 @@ use bevy::{
     ecs::resource::Resource,
     image::Image,
 };
-use cosmic_text::{
-    ttf_parser::Face, Attrs, Buffer, Family, FontSystem, Metrics, Shaping, Style, Weight,
-};
+use cosmic_text::{Attrs, Buffer, Family, FontSystem, Metrics, Shaping, Style, Weight};
+use ttf_parser::Face;
 
-use crate::{render::cache_glyph, tess::CommandEncoder, StrokeJoin, Text3dPlugin, TextAtlas};
+use crate::{render::cache_glyph, StrokeJoin, Text3dPlugin, TextAtlas};
 
 /// An [`Arc<Mutex>`] around [`cosmic_text::FontSystem`],
 /// rendering fonts require exclusive access.
@@ -140,7 +139,6 @@ impl TextRenderer {
         move || {
             let mut guard = font_system.0.lock().unwrap();
             let TextRendererInner { font_system, queue } = guard.deref_mut();
-            let mut tess_commands = CommandEncoder::default();
             for (id, mut atlas, mut image, workload) in workload {
                 for (str, style) in workload {
                     let mut buffer = Buffer::new(font_system, Metrics::new(style.size, style.size));
@@ -149,6 +147,7 @@ impl TextRenderer {
                         str.as_ref(),
                         &style.as_attrs(),
                         Shaping::Advanced,
+                        None,
                     );
                     buffer.shape_until_scroll(font_system, false);
                     let join = style.stroke_join;
@@ -164,7 +163,6 @@ impl TextRenderer {
                                     scale_factor,
                                     &mut atlas,
                                     &mut image,
-                                    &mut tess_commands,
                                     glyph,
                                     stroke,
                                     join,

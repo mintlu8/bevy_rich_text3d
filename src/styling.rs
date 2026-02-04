@@ -18,7 +18,8 @@ use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
 pub struct Text3dStyling {
     /// Size of the font, corresponding to world space units.
     ///
-    /// Ths is cached per unique value so be sure not to use too many of them.
+    /// Ths is cached per unique value so keep the amount of unique values of `size` low,
+    /// use [`Text3dStyling::world_scale`] instead for small variations.
     pub size: f32,
     /// Name of the font, by default `"serif"`.
     ///
