@@ -42,6 +42,8 @@ pub enum GlyphMeta {
     Advance,
     /// Returns x position in `em` of the center of a glyph as if the text is rendered in a single line.
     PerGlyphAdvance,
+    /// Returns a random value between `0..1` per glyph.
+    RandomPerGlyph,
     /// The `uv.x` as if the text block is a rectangular sprite.
     UvX,
     /// The `uv.y` as if the text block is a rectangular sprite.

@@ -28,6 +28,7 @@ bevy = { version = "0.18.0", default-features = false, features = [
   "bevy_window",
 ]}
 cosmic-text = { version = "0.17", default-features = false, features = ["fontconfig", "std"]}
+fastrand = { version = "2.3.0", default-features = false }
 rustc-hash = "2.1.1"
 sys-locale = "0.3.2"
 thiserror = "2.0.9"

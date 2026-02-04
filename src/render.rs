@@ -57,6 +57,17 @@ fn get_mesh<'t>(
     meshes.get_mut(id)
 }
 
+mod private {
+    pub struct TextRng(pub fastrand::Rng);
+
+    impl Default for TextRng {
+        fn default() -> Self {
+            Self(fastrand::Rng::with_seed(0))
+        }
+    }
+}
+
+
 pub fn text_render(
     settings: Res<Text3dPlugin>,
     font_system: ResMut<TextRenderer>,
@@ -75,6 +86,7 @@ pub fn text_render(
     segments: Query<Ref<FetchedTextSegment>>,
     mut draw_requests: Local<Vec<DrawRequest>>,
     mut sort_buffer: Local<Vec<(Layer, [u16; 6])>>,
+    mut rng: Local<private::TextRng>,
 ) {
     let Ok(mut lock) = font_system.0.try_lock() else {
         return;
@@ -255,6 +267,7 @@ pub fn text_render(
                                 advance + dw,
                                 magic_number,
                                 &styling,
+                                &mut rng.0,
                             );
                         }
                         DrawType::Line(stroke, mode) => {
@@ -320,6 +333,7 @@ pub fn text_render(
                                     advance + min,
                                     magic_number,
                                     &styling,
+                                    &mut rng.0,
                                 );
                             }
                         }

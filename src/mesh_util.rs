@@ -129,6 +129,7 @@ impl<'t> ExtractedMesh<'t> {
         advance: f32,
         magic_number: f32,
         styling: &Text3dStyling,
+        rng: &mut fastrand::Rng,
     ) {
         let mesh_rect = Rect {
             min: base,
@@ -143,6 +144,7 @@ impl<'t> ExtractedMesh<'t> {
             advance,
             magic_number,
             styling,
+            rng,
         );
     }
 
@@ -156,6 +158,7 @@ impl<'t> ExtractedMesh<'t> {
         advance: f32,
         magic_number: f32,
         styling: &Text3dStyling,
+        rng: &mut fastrand::Rng,
     ) {
         let i = self.positions.len() as u16;
         self.sort
@@ -198,6 +201,13 @@ impl<'t> ExtractedMesh<'t> {
                     uv1_buffer[1][i] = magic_number;
                     uv1_buffer[2][i] = magic_number;
                     uv1_buffer[3][i] = magic_number;
+                }
+                GlyphMeta::RandomPerGlyph => {
+                    let value = rng.f32();
+                    uv1_buffer[0][i] = value;
+                    uv1_buffer[1][i] = value;
+                    uv1_buffer[2][i] = value;
+                    uv1_buffer[3][i] = value;
                 }
                 GlyphMeta::UvX => (),
                 GlyphMeta::UvY => (),

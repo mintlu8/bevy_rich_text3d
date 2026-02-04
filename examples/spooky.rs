@@ -26,7 +26,7 @@ pub struct SpookyShader {
 
 impl MaterialExtension for SpookyShader {
     fn vertex_shader() -> ShaderRef {
-        ShaderRef::Path("wiggle.wgsl".into())
+        ShaderRef::Path("wobble.wgsl".into())
     }
 }
 
@@ -56,8 +56,8 @@ pub fn main() {
                         ..Default::default()
                     },
                     extension: SpookyShader {
-                        frequency: 1.,
-                        intensity: 14.,
+                        frequency: 2.,
+                        intensity: 9.,
                     },
                 }
             );
@@ -65,7 +65,7 @@ pub fn main() {
                 Text3d::parse_raw("Something {s-4, s-white, transparent, v-1:SPOOKY} is happening!").unwrap(),
                 Text3dStyling {
                     size: 64.0,
-                    uv1: (GlyphMeta::PerGlyphAdvance, GlyphMeta::MagicNumber),
+                    uv1: (GlyphMeta::RandomPerGlyph, GlyphMeta::MagicNumber),
                     ..Default::default()
                 },
                 Mesh3d::default(),
