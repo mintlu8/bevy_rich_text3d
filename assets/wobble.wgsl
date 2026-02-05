@@ -26,8 +26,10 @@ fn vertex(vertex: Vertex) -> VertexOutput {
 
 #ifdef VERTEX_POSITIONS
     out.world_position = mesh_functions::mesh_position_local_to_world(world_from_local, vec4<f32>(vertex.position, 1.0));
-    let t = globals.time + vertex.uv_b.x;
-    out.position = position_world_to_clip(out.world_position.xyz + vec3(sin(t * frequency), cos(t * frequency), 0.0) * intensity * vertex.uv_b.y);
+    let t = globals.time * frequency * 5.0 + vertex.uv_b.x * 12.0;
+    let x = sin(t) * cos(t * 1.3 + vertex.uv_b.x * 8.0);
+    let y = cos(t) * sin(t * 3.7 + vertex.uv_b.x * 3.0);
+    out.position = position_world_to_clip(out.world_position.xyz + vec3(x, y, 0.0) * intensity * vertex.uv_b.y);
 #endif
 
 #ifdef VERTEX_UVS_A

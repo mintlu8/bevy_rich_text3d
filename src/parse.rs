@@ -3,7 +3,7 @@ use std::{iter::repeat_n, num::NonZeroU32, str::FromStr};
 use crate::{
     color_table::parse_color,
     misc::{Style, Weight},
-    SegmentStyle, Text3d, Text3dSegment,
+    SegmentSize, SegmentStyle, Text3d, Text3dSegment,
 };
 
 trait Flip {
@@ -77,7 +77,7 @@ impl Text3d {
     ///
     /// ## Standard Styles
     ///
-    /// These will be parsed without the `stylesheet` function:
+    /// These will be parsed regardless of the `stylesheet` function:
     ///
     /// * `red` Parses Css color names as fill color.
     /// * `#ff00ff` Parses hex color (accepts 3, 4, 6, 8 digits) as fill color.
@@ -85,6 +85,9 @@ impl Text3d {
     /// * `s-red` Parses color names as stroke color.
     /// * `v-4.0` Sets the `magic_number` field.
     /// * `f-Roboto` Sets the font to Roboto.
+    /// * `#18` Sets font size to `18`.
+    /// * `*1.5` Sets font size to `1.5` times the original.
+    /// * `h1` - `h4` Sets font size to `2`, `1.75`, `1.5`, `1.25` times the original.
     ///
     /// ## Dynamic value
     ///
@@ -276,6 +279,24 @@ fn parse_style(
             font: Some(name.into()),
             ..Default::default()
         })
+    } else if let Some(name) = style.strip_prefix("#") {
+        if let Ok(size) = name.parse::<f32>() {
+            Ok(SegmentStyle {
+                size: Some(SegmentSize::Flat(size)),
+                ..Default::default()
+            })
+        } else {
+            stylesheet(style)
+        }
+    } else if let Some(name) = style.strip_prefix("*") {
+        if let Ok(size) = name.parse::<f32>() {
+            Ok(SegmentStyle {
+                size: Some(SegmentSize::Multiply(size)),
+                ..Default::default()
+            })
+        } else {
+            stylesheet(style)
+        }
     } else if let Some(color) = parse_color(style) {
         Ok(SegmentStyle {
             fill_color: Some(color),
@@ -297,6 +318,22 @@ fn parse_style(
             }),
             "strikethrough" => Ok(SegmentStyle {
                 strikethrough: Some(true),
+                ..Default::default()
+            }),
+            "h1" => Ok(SegmentStyle {
+                size: Some(SegmentSize::Multiply(2.0)),
+                ..Default::default()
+            }),
+            "h2" => Ok(SegmentStyle {
+                size: Some(SegmentSize::Multiply(1.75)),
+                ..Default::default()
+            }),
+            "h3" => Ok(SegmentStyle {
+                size: Some(SegmentSize::Multiply(1.5)),
+                ..Default::default()
+            }),
+            "h4" => Ok(SegmentStyle {
+                size: Some(SegmentSize::Multiply(1.25)),
                 ..Default::default()
             }),
             _ => stylesheet(style),

@@ -4,7 +4,6 @@ use bevy::{
 };
 use cosmic_text::{Style as CosmicStyle, Weight as CosmicWeight};
 use std::ops::{Deref, DerefMut};
-use zeno::Join;
 
 #[cfg(feature = "reflect")]
 use bevy::{
@@ -30,25 +29,6 @@ impl TextAlign {
             TextAlign::Right => 1.0,
         }
     }
-}
-
-/// Determines what kind of data each field in `uv1` carry.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
-pub enum GlyphMeta {
-    /// Left to right count of the glyph, `0`, `1`, etc.
-    #[default]
-    Index,
-    /// Returns x position in `em` of a vertex as if the text is rendered in a single line.
-    Advance,
-    /// Returns x position in `em` of the center of a glyph as if the text is rendered in a single line.
-    PerGlyphAdvance,
-    /// The `uv.x` as if the text block is a rectangular sprite.
-    RowX,
-    /// The `uv.y` as if the text block is a rectangular sprite.
-    ColY,
-    /// The [`SegmentStyle::magic_number`](crate::SegmentStyle::magic_number) field
-    MagicNumber,
 }
 
 /// Determines the maximum width of rendered text, by default infinite.
@@ -196,7 +176,11 @@ impl From<CosmicWeight> for Weight {
     }
 }
 
-/// Type of joins between curves.
+/// Specifies how corners are drawn when a shape is stroked.
+///
+/// Join affects the four corners of a stroked rectangle, and the connected segments in a stroked path.
+///
+/// Usually [`StrokeJoin::Round`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub enum StrokeJoin {
@@ -206,12 +190,12 @@ pub enum StrokeJoin {
     Bevel,
 }
 
-impl From<StrokeJoin> for Join {
+impl From<StrokeJoin> for tiny_skia::LineJoin {
     fn from(val: StrokeJoin) -> Self {
         match val {
-            StrokeJoin::Round => Join::Round,
-            StrokeJoin::Bevel => Join::Bevel,
-            StrokeJoin::Miter => Join::Miter,
+            StrokeJoin::Round => tiny_skia::LineJoin::Round,
+            StrokeJoin::Bevel => tiny_skia::LineJoin::Bevel,
+            StrokeJoin::Miter => tiny_skia::LineJoin::Miter,
         }
     }
 }

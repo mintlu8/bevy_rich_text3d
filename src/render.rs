@@ -6,22 +6,20 @@ use bevy::{
         world::{Mut, Ref},
     },
     image::Image,
-    math::{FloatOrd, IVec2, Rect, Vec2, Vec3, Vec4},
+    math::{IVec2, Rect, Vec2, Vec3, Vec4},
     mesh::{Indices, Mesh, Mesh2d, Mesh3d, PrimitiveTopology, VertexAttributeValues},
 };
-use cosmic_text::{
-    ttf_parser::{Face, GlyphId},
-    Attrs, Buffer, Family, FontSystem, LayoutGlyph, Metrics, Shaping, Weight, Wrap,
-};
+use cosmic_text::{Attrs, Buffer, Family, FontSystem, LayoutGlyph, Metrics, Shaping, Weight, Wrap};
 use std::num::NonZero;
+use ttf_parser::{Face, GlyphId};
 
 use crate::{
     fetch::FetchedTextSegment,
     layers::{DrawRequest, DrawType, Layer},
     line::LineRun,
     mesh_util::ExtractedMesh,
-    styling::GlyphEntry,
-    tess::CommandEncoder,
+    styling::{FloatDecimal, GlyphEntry},
+    tess::PathEncoder,
     text3d::{Text3d, Text3dSegment},
     SegmentStyle, StrokeJoin, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyling,
     TextAtlas, TextAtlasHandle, TextRenderer,
@@ -32,7 +30,6 @@ fn default_mesh() -> Mesh {
         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, Vec::<Vec3>::new())
         .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, Vec::<Vec3>::new())
         .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, Vec::<Vec2>::new())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_1, Vec::<Vec2>::new())
         .with_inserted_attribute(Mesh::ATTRIBUTE_COLOR, Vec::<Vec4>::new())
         .with_inserted_indices(Indices::U16(Vec::new()))
 }
@@ -59,6 +56,16 @@ fn get_mesh<'t>(
     meshes.get_mut(id)
 }
 
+mod private {
+    pub struct TextRng(pub fastrand::Rng);
+
+    impl Default for TextRng {
+        fn default() -> Self {
+            Self(fastrand::Rng::with_seed(0))
+        }
+    }
+}
+
 pub fn text_render(
     settings: Res<Text3dPlugin>,
     font_system: ResMut<TextRenderer>,
@@ -77,6 +84,7 @@ pub fn text_render(
     segments: Query<Ref<FetchedTextSegment>>,
     mut draw_requests: Local<Vec<DrawRequest>>,
     mut sort_buffer: Local<Vec<(Layer, [u16; 6])>>,
+    mut rng: Local<private::TextRng>,
 ) {
     let Ok(mut lock) = font_system.0.try_lock() else {
         return;
@@ -153,8 +161,13 @@ pub fn text_render(
             font_system,
             Metrics::new(styling.size, styling.size * styling.line_height),
         );
+        let width_limit = if let Some(world_scale) = styling.world_scale {
+            bounds.width * styling.size / world_scale.x
+        } else {
+            bounds.width
+        };
         buffer.set_wrap(font_system, Wrap::WordOrGlyph);
-        buffer.set_size(font_system, Some(bounds.width), None);
+        buffer.set_size(font_system, Some(width_limit), None);
         buffer.set_tab_width(font_system, styling.tab_width);
 
         buffer.set_rich_text(
@@ -188,13 +201,12 @@ pub fn text_render(
             continue;
         };
 
-        let mut mesh = ExtractedMesh::new(mesh, &mut sort_buffer, styling.layer_offset);
+        let mut mesh = ExtractedMesh::new(mesh, &mut sort_buffer, &styling);
 
         let mut width = 0.0f32;
         let mut advance = 0.0f32;
         let mut real_index = 0;
 
-        let mut tess_commands = CommandEncoder::default();
         let mut height = 0.0f32;
 
         let mut min_x = f32::MAX;
@@ -216,11 +228,18 @@ pub fn text_render(
 
                 let magic_number = attrs.magic_number.unwrap_or(0.);
 
+                let scale_factor = if glyph.font_size <= settings.double_scale_factor_threshold {
+                    scale_factor * 2.0
+                } else {
+                    scale_factor
+                };
+
                 for DrawRequest {
                     request,
                     color,
                     offset,
                     sort: layer,
+                    category,
                 } in draw_requests.drain(..)
                 {
                     match request {
@@ -231,7 +250,6 @@ pub fn text_render(
                                 &styling,
                                 atlas,
                                 image,
-                                &mut tess_commands,
                                 glyph,
                                 attrs,
                                 stroke,
@@ -258,7 +276,9 @@ pub fn text_render(
                                 real_index,
                                 advance + dw,
                                 magic_number,
+                                category,
                                 &styling,
+                                &mut rng.0,
                             );
                         }
                         DrawType::Line(stroke, mode) => {
@@ -280,7 +300,6 @@ pub fn text_render(
                                 scale_factor,
                                 atlas,
                                 image,
-                                &mut tess_commands,
                                 attrs,
                                 &styling,
                                 stroke,
@@ -324,7 +343,9 @@ pub fn text_render(
                                     real_index,
                                     advance + min,
                                     magic_number,
+                                    category,
                                     &styling,
+                                    &mut rng.0,
                                 );
                             }
                         }
@@ -345,15 +366,16 @@ pub fn text_render(
         let offset = *styling.anchor * dimension - center;
         let bb_min = Vec2::new(min_x, -height);
 
-        mesh.post_process_uv1(&styling, bb_min, dimension);
+        mesh.post_process(bb_min, dimension);
 
         if let Some(world_scale) = styling.world_scale {
             mesh.translate(|v| *v = (*v + offset) * world_scale / styling.size);
+            output.dimension = dimension * world_scale / styling.size;
         } else {
             mesh.translate(|v| *v += offset);
+            output.dimension = dimension;
         }
 
-        output.dimension = dimension;
         output.atlas_dimension = IVec2::new(image.width() as i32, image.height() as i32);
 
         mesh.pixel_to_uv(image);
@@ -366,7 +388,6 @@ fn get_atlas_rect(
     styling: &Text3dStyling,
     atlas: &mut TextAtlas,
     image: &mut Image,
-    tess_commands: &mut CommandEncoder,
     glyph: &LayoutGlyph,
     attrs: &SegmentStyle,
     stroke: Option<NonZero<u32>>,
@@ -376,7 +397,7 @@ fn get_atlas_rect(
         .get(&GlyphEntry {
             font: glyph.font_id,
             glyph_id: glyph.glyph_id.into(),
-            size: FloatOrd(glyph.font_size),
+            real_size: FloatDecimal::new(glyph.font_size * scale_factor),
             weight: styling.weight,
             join: styling.stroke_join,
             stroke,
@@ -393,7 +414,6 @@ fn get_atlas_rect(
                         scale_factor,
                         atlas,
                         image,
-                        tess_commands,
                         glyph,
                         stroke,
                         styling.stroke_join,
@@ -410,7 +430,6 @@ pub(crate) fn cache_glyph(
     scale_factor: f32,
     atlas: &mut TextAtlas,
     image: &mut Image,
-    tess_commands: &mut CommandEncoder,
     glyph: &cosmic_text::LayoutGlyph,
     stroke: Option<NonZero<u32>>,
     stroke_join: StrokeJoin,
@@ -421,14 +440,14 @@ pub(crate) fn cache_glyph(
     let entry = GlyphEntry {
         font: glyph.font_id,
         glyph_id: glyph.glyph_id.into(),
-        size: FloatOrd(glyph.font_size),
+        real_size: FloatDecimal::new(glyph.font_size * scale_factor),
         weight: weight.into(),
         stroke,
         join: stroke_join,
     };
-    tess_commands.commands.clear();
-    face.outline_glyph(GlyphId(glyph.glyph_id), tess_commands)?;
-    let stroke = stroke.map(|x| x.get() as f32 * unit_per_em / 100.);
+    let mut tess_commands = PathEncoder::default();
+    face.outline_glyph(GlyphId(glyph.glyph_id), &mut tess_commands)?;
+    let stroke = stroke.map(|x| x.get() as f32 * glyph.font_size / 100.);
     let scale = glyph.font_size / unit_per_em * scale_factor;
     tess_commands.tess_glyph(stroke, scale, atlas, image, entry)
 }

@@ -140,7 +140,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         ChildOf(layout),
         Transform2D::default(),
         Text3d::parse_raw(
-            "__{s-red:r}{s-orange:a}{s-yellow:i}{s-green:n}{s-blue:b}{s-purple:o}{s-pink:w}__",
+            "__{black:{s-red:r}{s-orange:a}{s-yellow:i}{s-green:n}{s-blue:b}{s-purple:o}{s-pink:w}}__ or __{red:r}{orange:a}{yellow:i}{green:n}{blue:b}{purple:o}{pink:w}__",
         )
         .unwrap(),
         Text3dStyling {

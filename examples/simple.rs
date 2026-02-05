@@ -71,8 +71,11 @@ fn setup(
     ));
 
     commands.spawn((
-        Text3d::new("This application is powered by bevy, cosmic_text, zeno and bevy_rich_text3d!"),
+        Text3d::new(
+            "This application is powered by bevy, cosmic_text, tiny_skia and bevy_rich_text3d!",
+        ),
         Text3dStyling {
+            font: "monospace".into(),
             color: Srgba::new(0., 1., 1., 1.),
             ..Default::default()
         },

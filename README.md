@@ -15,7 +15,7 @@ with `StandardMaterial` but also can be empowered by user defined shaders.
 
 We render each glyph as a separate quad, meaning in shaders, we can easily manipulate
 individual glyphs for different effects. Additionally we support exporting specific values
-like glyph count, glyph position or user defined magic numbers via the `uv1` field.
+like glyph count, glyph position or user defined magic numbers via either `uv1` or custom mesh attributes.
 
 ## Getting Started
 
@@ -56,8 +56,10 @@ commands.spawn(
 ## Rich Text
 
 Rich text can be created from a string using the `Text3d::parse` function. We support a
-simple syntax like `{style:value}` which is equivalent to `<style>value</style>` in html,
-and `{value}`, which acts as a dynamic value that can be fetched from the world.
+straightforward syntax:
+
+* `{style:value}`: equivalent to `<style>value</style>` in html.
+* `{value}` (without `:`): parse as a dynamic value that can be fetched from the world.
 
 See documentation on `Text3d::parse` for up-to-date syntax.
 
@@ -65,12 +67,11 @@ See documentation on `Text3d::parse` for up-to-date syntax.
 
 * `cosmic_text`
 
-Cosmic text is used for layout.
+A minimal subset of Cosmic text is used for layout.
 
-* `zeno`
+* `tiny_skia`
 
-Used for tesselation, this is the same render engine as `bevy_text`, `cosmic_text` and `swash`.
-We use this crate directly since we do not use `swash`.
+Used for tesselation.
 
 * `bevy`
 

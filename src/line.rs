@@ -2,14 +2,14 @@ use std::num::NonZero;
 
 use bevy::{
     image::Image,
-    math::{FloatOrd, Rect, Vec2},
+    math::{Rect, Vec2},
 };
-use cosmic_text::{fontdb::ID, ttf_parser::Face, FontSystem, LayoutGlyph};
-use zeno::{Command, Point};
+use cosmic_text::{fontdb::ID, FontSystem, LayoutGlyph};
+use ttf_parser::Face;
 
 use crate::{
-    styling::{GlyphEntry, GlyphTextureOf},
-    tess::CommandEncoder,
+    styling::{FloatDecimal, GlyphEntry, GlyphTextureOf},
+    tess::PathEncoder,
     SegmentStyle, Text3dSegment, Text3dStyling, TextAtlas,
 };
 
@@ -227,7 +227,6 @@ impl LineMode {
         scale_factor: f32,
         atlas: &mut TextAtlas,
         image: &mut Image,
-        tess_commands: &mut CommandEncoder,
         attrs: &SegmentStyle,
         style: &Text3dStyling,
         stroke: Option<NonZero<u32>>,
@@ -236,7 +235,7 @@ impl LineMode {
             font,
             glyph_id: (*self).into(),
             join: style.stroke_join,
-            size: FloatOrd(style.size),
+            real_size: FloatDecimal::new(style.size * scale_factor),
             weight: attrs.weight.unwrap_or(style.weight),
             stroke,
         };
@@ -258,7 +257,6 @@ impl LineMode {
                             scale_factor,
                             atlas,
                             image,
-                            tess_commands,
                             stroke,
                             face,
                         )
@@ -274,7 +272,6 @@ impl LineMode {
         scale_factor: f32,
         atlas: &mut TextAtlas,
         image: &mut Image,
-        tess_commands: &mut CommandEncoder,
         stroke: Option<NonZero<u32>>,
         face: Face,
     ) -> Option<Rect> {
@@ -284,20 +281,9 @@ impl LineMode {
         }?;
         let unit_per_em = face.units_per_em() as f32;
         let d = metrics.thickness as f32 / unit_per_em * size * scale_factor;
-        tess_commands.commands.clear();
-        tess_commands
-            .commands
-            .push(Command::MoveTo(Point::new(0., 0.)));
-        tess_commands
-            .commands
-            .push(Command::LineTo(Point::new(d, 0.)));
-        tess_commands
-            .commands
-            .push(Command::LineTo(Point::new(d, d)));
-        tess_commands
-            .commands
-            .push(Command::LineTo(Point::new(0., d)));
-        tess_commands.commands.push(Command::Close);
+
+        let mut tess_commands = PathEncoder::default();
+        tess_commands.push_rect(0., 0., d, d);
         let stroke = stroke.map(|x| x.get() as f32 * size / 100.);
 
         tess_commands

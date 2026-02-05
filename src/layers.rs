@@ -5,7 +5,7 @@ use std::{
 
 use bevy::{color::Srgba, math::Vec2};
 
-use crate::{line::LineMode, SegmentStyle, Text3dStyling};
+use crate::{export::TextMeshFaceCategory, line::LineMode, SegmentStyle, Text3dStyling};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Layer(u8);
@@ -45,6 +45,7 @@ pub struct DrawRequest {
     pub request: DrawType,
     pub color: Srgba,
     pub offset: Vec2,
+    pub category: TextMeshFaceCategory,
 }
 
 impl Text3dStyling {
@@ -85,11 +86,19 @@ impl Text3dStyling {
         };
         for (shadow_color, offset, shadow_layer) in normal_shadow.iter().copied() {
             for (stroke, color, regular_layer) in fill_stroke.iter().copied() {
+                let category = if shadow_color.is_some() {
+                    TextMeshFaceCategory::Shadow
+                } else if stroke.is_some() {
+                    TextMeshFaceCategory::Stroke
+                } else {
+                    TextMeshFaceCategory::Fill
+                };
                 requests.push(DrawRequest {
                     request: DrawType::Glyph(stroke),
                     color: shadow_color.unwrap_or(color),
                     offset,
                     sort: regular_layer | shadow_layer,
+                    category,
                 });
                 if attrs.underline.is_some_and(|x| x) {
                     requests.push(DrawRequest {
@@ -97,6 +106,7 @@ impl Text3dStyling {
                         color: shadow_color.unwrap_or(color),
                         offset,
                         sort: regular_layer | shadow_layer | Layer::Underline,
+                        category,
                     });
                 }
                 if attrs.strikethrough.is_some_and(|x| x) {
@@ -105,6 +115,7 @@ impl Text3dStyling {
                         color: shadow_color.unwrap_or(color),
                         offset,
                         sort: regular_layer | shadow_layer | Layer::Strikethrough,
+                        category,
                     });
                 }
             }

@@ -65,6 +65,7 @@ impl Text3d {
         }
     }
 
+    /// Create a string from a [`FetchedTextSegment`](crate::FetchedTextSegment) on an entity.
     pub fn from_extract(entity: Entity) -> Self {
         Self {
             segments: vec![(Text3dSegment::Extract(entity), Default::default())],
