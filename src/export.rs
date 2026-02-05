@@ -31,7 +31,7 @@ pub enum MeshExport {
     None,
     /// Export two values as `uv1`.
     ///
-    /// This requires no modification of the pipeline.
+    /// This does not require modification to the pipeline.
     Uv1(GlyphMeta, GlyphMeta),
     /// Export as an arbitrary amount of custom attributes.
     Custom(Vec<MeshExportEntry>),
@@ -41,7 +41,8 @@ impl MeshExport {
     pub fn init_cache(&self, mesh: &mut Mesh) -> Vec<MeshExportCache> {
         macro_rules! reuse {
             ($attr: expr, $data: ident) => {
-                if let Some(VertexAttributeValues::$data(data)) = mesh.remove_attribute($attr) {
+                if let Some(VertexAttributeValues::$data(mut data)) = mesh.remove_attribute($attr) {
+                    data.clear();
                     data
                 } else {
                     Vec::new()

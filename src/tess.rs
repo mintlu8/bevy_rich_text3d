@@ -65,7 +65,7 @@ impl PathEncoder {
         let image_height = image.height();
         let paint = Paint {
             shader: Shader::SolidColor(Color::WHITE),
-            blend_mode: BlendMode::SourceOver,
+            blend_mode: BlendMode::Source,
             anti_alias: true,
             colorspace: ColorSpace::Linear,
             force_hq_pipeline: false,

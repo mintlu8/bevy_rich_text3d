@@ -161,8 +161,13 @@ pub fn text_render(
             font_system,
             Metrics::new(styling.size, styling.size * styling.line_height),
         );
+        let width_limit = if let Some(world_scale) = styling.world_scale {
+            bounds.width * styling.size / world_scale.x
+        } else {
+            bounds.width
+        };
         buffer.set_wrap(font_system, Wrap::WordOrGlyph);
-        buffer.set_size(font_system, Some(bounds.width), None);
+        buffer.set_size(font_system, Some(width_limit), None);
         buffer.set_tab_width(font_system, styling.tab_width);
 
         buffer.set_rich_text(
@@ -356,11 +361,12 @@ pub fn text_render(
 
         if let Some(world_scale) = styling.world_scale {
             mesh.translate(|v| *v = (*v + offset) * world_scale / styling.size);
+            output.dimension = dimension * world_scale / styling.size;
         } else {
             mesh.translate(|v| *v += offset);
+            output.dimension = dimension;
         }
 
-        output.dimension = dimension;
         output.atlas_dimension = IVec2::new(image.width() as i32, image.height() as i32);
 
         mesh.pixel_to_uv(image);
