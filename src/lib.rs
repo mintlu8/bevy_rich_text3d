@@ -5,6 +5,7 @@
 mod atlas;
 mod change_detection;
 mod color_table;
+mod export;
 mod fetch;
 mod layers;
 mod line;
@@ -42,6 +43,7 @@ use change_detection::TouchMaterialSet;
 pub use change_detection::TouchTextMaterial2dPlugin;
 #[cfg(feature = "3d")]
 pub use change_detection::TouchTextMaterial3dPlugin;
+pub use export::{GlyphMeta, MeshExport, MeshExportEntry};
 pub use fetch::{FetchedTextSegment, SharedTextSegment, TextFetch};
 use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
 pub use misc::*;

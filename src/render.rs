@@ -30,7 +30,6 @@ fn default_mesh() -> Mesh {
         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, Vec::<Vec3>::new())
         .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, Vec::<Vec3>::new())
         .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, Vec::<Vec2>::new())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_1, Vec::<Vec2>::new())
         .with_inserted_attribute(Mesh::ATTRIBUTE_COLOR, Vec::<Vec4>::new())
         .with_inserted_indices(Indices::U16(Vec::new()))
 }
@@ -66,7 +65,6 @@ mod private {
         }
     }
 }
-
 
 pub fn text_render(
     settings: Res<Text3dPlugin>,
@@ -198,7 +196,7 @@ pub fn text_render(
             continue;
         };
 
-        let mut mesh = ExtractedMesh::new(mesh, &mut sort_buffer, styling.layer_offset);
+        let mut mesh = ExtractedMesh::new(mesh, &mut sort_buffer, &styling);
 
         let mut width = 0.0f32;
         let mut advance = 0.0f32;
@@ -354,7 +352,7 @@ pub fn text_render(
         let offset = *styling.anchor * dimension - center;
         let bb_min = Vec2::new(min_x, -height);
 
-        mesh.post_process_uv1(&styling, bb_min, dimension);
+        mesh.post_process(bb_min, dimension);
 
         if let Some(world_scale) = styling.world_scale {
             mesh.translate(|v| *v = (*v + offset) * world_scale / styling.size);

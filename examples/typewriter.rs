@@ -16,7 +16,7 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    GlyphMeta, Text3d, Text3dBounds, Text3dPlugin, Text3dStyling, TextAlign, TextAtlas,
+    GlyphMeta, MeshExport, Text3d, Text3dBounds, Text3dPlugin, Text3dStyling, TextAlign, TextAtlas,
     TouchTextMaterial3dPlugin,
 };
 
@@ -72,7 +72,7 @@ pub fn main() {
                 Text3d::new(include_str!("lorem.txt")),
                 Text3dStyling {
                     align: TextAlign::Left,
-                    uv1: (GlyphMeta::PerGlyphAdvance, GlyphMeta::Advance),
+                    export: MeshExport::Uv1(GlyphMeta::PerGlyphAdvance, GlyphMeta::Advance),
                     ..Default::default()
                 },
                 Text3dBounds { width: 500. },

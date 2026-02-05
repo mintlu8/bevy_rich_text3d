@@ -5,7 +5,11 @@ use bevy::{
     mesh::{Indices, Mesh, VertexAttributeValues},
 };
 
-use crate::{layers::Layer, GlyphMeta, Text3dStyling};
+use crate::{
+    export::{MeshExportCache, MeshExportCacheData},
+    layers::Layer,
+    GlyphMeta, Text3dStyling,
+};
 
 // Take the allocation if possible but clear the data.
 macro_rules! recycle_mesh {
@@ -42,7 +46,7 @@ pub(crate) struct ExtractedMesh<'t> {
     pub positions: Vec<[f32; 3]>,
     pub normals: Vec<[f32; 3]>,
     pub uv0: Vec<[f32; 2]>,
-    pub uv1: Vec<[f32; 2]>,
+    pub exports: Vec<MeshExportCache>,
     pub colors: Vec<[f32; 4]>,
     pub indices: Vec<u16>,
     pub sort: &'t mut Vec<(Layer, [u16; 6])>,
@@ -53,13 +57,13 @@ impl<'t> ExtractedMesh<'t> {
     pub fn new(
         mesh: &'t mut Mesh,
         sort_buffer: &'t mut Vec<(Layer, [u16; 6])>,
-        layer_offset: f32,
+        style: &Text3dStyling,
     ) -> Self {
         sort_buffer.clear();
         let positions = recycle_mesh!(mesh, ATTRIBUTE_POSITION, Float32x3);
         let normals = recycle_mesh!(mesh, ATTRIBUTE_NORMAL, Float32x3);
         let uv0 = recycle_mesh!(mesh, ATTRIBUTE_UV_0, Float32x2);
-        let uv1 = recycle_mesh!(mesh, ATTRIBUTE_UV_1, Float32x2);
+        let exports = style.export.init_cache(mesh);
         let colors = recycle_mesh!(mesh, ATTRIBUTE_COLOR, Float32x4);
 
         let mut indices = if let Some(Indices::U16(indices)) = mesh.remove_indices() {
@@ -73,11 +77,11 @@ impl<'t> ExtractedMesh<'t> {
             positions,
             normals,
             uv0,
-            uv1,
+            exports,
             colors,
             indices,
             sort: sort_buffer,
-            layer_offset,
+            layer_offset: style.layer_offset,
         }
     }
 
@@ -91,20 +95,24 @@ impl<'t> ExtractedMesh<'t> {
         });
     }
 
-    pub fn post_process_uv1(&mut self, styling: &Text3dStyling, min: Vec2, dimension: Vec2) {
-        for (meta_type, i) in [(styling.uv1.0, 0), (styling.uv1.1, 1)] {
-            match meta_type {
-                GlyphMeta::UvX => {
-                    for (uv1, position) in self.uv1.iter_mut().zip(self.positions.iter()) {
-                        uv1[i] = (position[0] - min.x) / dimension.x;
+    pub fn post_process(&mut self, min: Vec2, dimension: Vec2) {
+        for item in &mut self.exports {
+            for (idx, meta_type) in item.entry.iter() {
+                match meta_type {
+                    GlyphMeta::UvX => {
+                        item.data
+                            .for_each_zipped_mut(&self.positions, |arr, position| {
+                                arr[idx] = (position[0] - min.x) / dimension.x;
+                            })
                     }
-                }
-                GlyphMeta::UvY => {
-                    for (uv1, position) in self.uv1.iter_mut().zip(self.positions.iter()) {
-                        uv1[i] = (position[1] - min.y) / dimension.y;
+                    GlyphMeta::UvY => {
+                        item.data
+                            .for_each_zipped_mut(&self.positions, |arr, position| {
+                                arr[idx] = (position[1] - min.y) / dimension.y;
+                            })
                     }
+                    _ => (),
                 }
-                _ => (),
             }
         }
     }
@@ -172,49 +180,35 @@ impl<'t> ExtractedMesh<'t> {
         // First we cache the pixel position since the texture may be resized.
         self.uv0.extend(corners(texture));
 
-        let mut uv1_buffer = [[0., 0.], [0., 0.], [0., 0.], [0., 0.]];
-
-        for (meta_type, i) in [(styling.uv1.0, 0), (styling.uv1.1, 1)] {
-            match meta_type {
-                GlyphMeta::Index => {
-                    for pair in &mut uv1_buffer {
-                        pair[i] = real_index as f32;
-                    }
-                }
-                GlyphMeta::Advance => {
-                    let x0 = advance / styling.size;
-                    let x1 = (advance + mesh_rect.width()) / styling.size;
-                    uv1_buffer[0][i] = x0;
-                    uv1_buffer[1][i] = x1;
-                    uv1_buffer[2][i] = x0;
-                    uv1_buffer[3][i] = x1;
-                }
-                GlyphMeta::PerGlyphAdvance => {
-                    let x = (advance + mesh_rect.width() / 2.0) / styling.size;
-                    uv1_buffer[0][i] = x;
-                    uv1_buffer[1][i] = x;
-                    uv1_buffer[2][i] = x;
-                    uv1_buffer[3][i] = x;
-                }
-                GlyphMeta::MagicNumber => {
-                    uv1_buffer[0][i] = magic_number;
-                    uv1_buffer[1][i] = magic_number;
-                    uv1_buffer[2][i] = magic_number;
-                    uv1_buffer[3][i] = magic_number;
-                }
-                GlyphMeta::RandomPerGlyph => {
-                    let value = rng.f32();
-                    uv1_buffer[0][i] = value;
-                    uv1_buffer[1][i] = value;
-                    uv1_buffer[2][i] = value;
-                    uv1_buffer[3][i] = value;
-                }
-                GlyphMeta::UvX => (),
-                GlyphMeta::UvY => (),
+        for item in &mut self.exports {
+            item.data.extend_empty();
+            for (index, meta) in item.entry.iter() {
+                let random_per_glyph = rng.f32();
+                item.data
+                    .with_inserted_quad(index, |vertex, item| match meta {
+                        GlyphMeta::Index => {
+                            *item = real_index as f32;
+                        }
+                        GlyphMeta::Advance => {
+                            if vertex & 1 == 0 {
+                                *item = advance / styling.size;
+                            } else {
+                                *item = (advance + mesh_rect.width()) / styling.size;
+                            }
+                        }
+                        GlyphMeta::PerGlyphAdvance => {
+                            *item = (advance + mesh_rect.width() / 2.0) / styling.size;
+                        }
+                        GlyphMeta::MagicNumber => {
+                            *item = magic_number;
+                        }
+                        GlyphMeta::RandomPerGlyph => *item = random_per_glyph,
+                        GlyphMeta::RandomPerVertex => *item = rng.f32(),
+                        GlyphMeta::UvX => (),
+                        GlyphMeta::UvY => (),
+                    });
             }
         }
-
-        self.uv1.extend(uv1_buffer);
     }
 }
 
@@ -248,8 +242,9 @@ impl Drop for ExtractedMesh<'_> {
                 .insert_attribute(Mesh::ATTRIBUTE_COLOR, take(&mut self.colors));
             self.mesh
                 .insert_attribute(Mesh::ATTRIBUTE_UV_0, take(&mut self.uv0));
-            self.mesh
-                .insert_attribute(Mesh::ATTRIBUTE_UV_1, take(&mut self.uv1));
+            for entry in take(&mut self.exports) {
+                self.mesh.insert_attribute(entry.entry.id, entry.data);
+            }
             self.mesh
                 .insert_indices(Indices::U16(take(&mut self.indices)));
         } else {
@@ -262,8 +257,25 @@ impl Drop for ExtractedMesh<'_> {
                 .insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![[0.0, 0.0, 0.0, 0.0]; 3]);
             self.mesh
                 .insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0.0, 0.0]; 3]);
-            self.mesh
-                .insert_attribute(Mesh::ATTRIBUTE_UV_1, vec![[0.0, 0.0]; 3]);
+            for entry in take(&mut self.exports) {
+                match entry.data {
+                    MeshExportCacheData::F1(_) => {
+                        self.mesh.insert_attribute(entry.entry.id, vec![0.0; 3]);
+                    }
+                    MeshExportCacheData::F2(_) => {
+                        self.mesh
+                            .insert_attribute(entry.entry.id, vec![[0.0; 2]; 3]);
+                    }
+                    MeshExportCacheData::F3(_) => {
+                        self.mesh
+                            .insert_attribute(entry.entry.id, vec![[0.0; 3]; 3]);
+                    }
+                    MeshExportCacheData::F4(_) => {
+                        self.mesh
+                            .insert_attribute(entry.entry.id, vec![[0.0; 4]; 3]);
+                    }
+                }
+            }
             self.mesh.insert_indices(Indices::U16(vec![0, 1, 2]));
         }
     }

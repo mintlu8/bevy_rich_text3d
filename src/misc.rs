@@ -31,27 +31,6 @@ impl TextAlign {
     }
 }
 
-/// Determines what kind of data each field in `uv1` carry.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
-pub enum GlyphMeta {
-    /// Left to right count of the glyph, `0`, `1`, etc.
-    #[default]
-    Index,
-    /// Returns x position in `em` of a vertex as if the text is rendered in a single line.
-    Advance,
-    /// Returns x position in `em` of the center of a glyph as if the text is rendered in a single line.
-    PerGlyphAdvance,
-    /// Returns a random value between `0..1` per glyph.
-    RandomPerGlyph,
-    /// The `uv.x` as if the text block is a rectangular sprite.
-    UvX,
-    /// The `uv.y` as if the text block is a rectangular sprite.
-    UvY,
-    /// The [`SegmentStyle::magic_number`](crate::SegmentStyle::magic_number) field
-    MagicNumber,
-}
-
 /// Determines the maximum width of rendered text, by default infinite.
 #[derive(Debug, Component)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]

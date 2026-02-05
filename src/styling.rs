@@ -6,7 +6,7 @@ use bevy::{
 use cosmic_text::{fontdb::ID, Attrs};
 use std::{num::NonZeroU32, sync::Arc};
 
-use crate::{prepare::family, GlyphMeta, StrokeJoin, Style, TextAlign, TextAnchor, Weight};
+use crate::{prepare::family, MeshExport, StrokeJoin, Style, TextAlign, TextAnchor, Weight};
 
 #[cfg(feature = "reflect")]
 use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
@@ -59,14 +59,13 @@ pub struct Text3dStyling {
     /// not for opaque3d.
     pub layer_offset: f32,
     /// Determines what to extract as uv1.
-    pub uv1: (GlyphMeta, GlyphMeta),
+    pub export: MeshExport,
     /// Tab in terms of spaces, default 4.
     pub tab_width: u16,
     /// If set, overwrite the size of `em` in the generated mesh.
     ///
     /// By default the mesh size is relative to [`Text3dStyling::size`], which is equivalent to `Some((size, size))`.
     pub world_scale: Option<Vec2>,
-
     /// If `Some`, render a text shadow.
     pub text_shadow: Option<(Srgba, Vec2)>,
 }
@@ -88,7 +87,7 @@ impl Default for Text3dStyling {
             layer_offset: 0.01,
             stroke_in_front: false,
             stroke_join: StrokeJoin::Round,
-            uv1: (GlyphMeta::Index, GlyphMeta::PerGlyphAdvance),
+            export: MeshExport::None,
             tab_width: 4,
             world_scale: None,
             text_shadow: None,

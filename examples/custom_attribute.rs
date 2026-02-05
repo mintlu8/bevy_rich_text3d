@@ -4,17 +4,25 @@ use bevy::{
     color::Color,
     light::GlobalAmbientLight,
     math::Vec3,
-    pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
+    mesh::{Mesh, MeshVertexAttribute, MeshVertexBufferLayoutRef, VertexFormat},
+    pbr::{
+        ExtendedMaterial, MaterialExtension, MaterialExtensionKey, MaterialExtensionPipeline,
+        MaterialPlugin, MeshMaterial3d, StandardMaterial,
+    },
     prelude::{
         AlphaMode, Camera3d, Commands, Mesh3d, OrthographicProjection, Projection, ResMut,
         Transform,
     },
     reflect::TypePath,
-    render::render_resource::AsBindGroup,
+    render::render_resource::{
+        AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError,
+    },
     shader::ShaderRef,
     DefaultPlugins,
 };
-use bevy_rich_text3d::{GlyphMeta, MeshExport, Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
+use bevy_rich_text3d::{
+    GlyphMeta, MeshExport, MeshExportEntry, Text3d, Text3dPlugin, Text3dStyling, TextAtlas,
+};
 
 #[derive(Debug, Clone, TypePath, AsBindGroup, Asset)]
 pub struct SpookyShader {
@@ -26,9 +34,32 @@ pub struct SpookyShader {
 
 impl MaterialExtension for SpookyShader {
     fn vertex_shader() -> ShaderRef {
-        ShaderRef::Path("wobble.wgsl".into())
+        ShaderRef::Path("custom_attribute.wgsl".into())
+    }
+    fn fragment_shader() -> ShaderRef {
+        ShaderRef::Path("custom_attribute.wgsl".into())
+    }
+
+    fn specialize(
+        _: &MaterialExtensionPipeline,
+        descriptor: &mut RenderPipelineDescriptor,
+        layout: &MeshVertexBufferLayoutRef,
+        _: MaterialExtensionKey<Self>,
+    ) -> Result<(), SpecializedMeshPipelineError> {
+        let vertex_layout = layout.0.get_layout(&[
+            Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
+            Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
+            Mesh::ATTRIBUTE_UV_0.at_shader_location(2),
+            Mesh::ATTRIBUTE_COLOR.at_shader_location(5),
+            MY_ATTRIBUTE.at_shader_location(30),
+        ])?;
+        descriptor.vertex.buffers = vec![vertex_layout];
+        Ok(())
     }
 }
+
+const MY_ATTRIBUTE: MeshVertexAttribute =
+    MeshVertexAttribute::new("text_attribute", 666, VertexFormat::Float32x4);
 
 pub fn main() {
     App::new()
@@ -62,25 +93,21 @@ pub fn main() {
                 }
             );
             commands.spawn((
-                Text3d::parse_raw("Something {s-4, s-white, transparent, v-1:SPOOKY} is happening!").unwrap(),
+                Text3d::parse_raw("Something {v-1:**CRAZY**} is happening!").unwrap(),
                 Text3dStyling {
                     size: 64.0,
-                    export: MeshExport::Uv1(GlyphMeta::RandomPerGlyph, GlyphMeta::MagicNumber),
+                    export: MeshExport::Custom(vec![
+                        MeshExportEntry::new(MY_ATTRIBUTE, &[
+                            GlyphMeta::RandomPerGlyph,
+                            GlyphMeta::MagicNumber,
+                            GlyphMeta::Advance,
+                            GlyphMeta::PerGlyphAdvance,
+                        ])
+                    ]),
                     ..Default::default()
                 },
                 Mesh3d::default(),
                 MeshMaterial3d(mat.clone()),
-            ));
-            commands.spawn((
-                Text3d::parse_raw("{s-white, v-1:HELP!}").unwrap(),
-                Text3dStyling {
-                    size: 64.0,
-                    export: MeshExport::Uv1(GlyphMeta::RandomPerVertex, GlyphMeta::MagicNumber),
-                    ..Default::default()
-                },
-                Mesh3d::default(),
-                MeshMaterial3d(mat.clone()),
-                Transform::from_translation(Vec3::new(0., -100., 0.))
             ));
             commands.spawn((
                 Camera3d::default(),
