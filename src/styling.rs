@@ -1,12 +1,9 @@
-use bevy::{
-    color::Srgba,
-    ecs::component::Component,
-    math::{FloatOrd, Vec2},
-};
-use cosmic_text::{fontdb::ID, Attrs};
-use std::{num::NonZeroU32, sync::Arc};
-
 use crate::{prepare::family, MeshExport, StrokeJoin, Style, TextAlign, TextAnchor, Weight};
+use bevy::{color::Srgba, ecs::component::Component, math::Vec2};
+use cosmic_text::Metrics;
+use cosmic_text::{fontdb::ID, Attrs};
+use std::fmt::Debug;
+use std::{num::NonZeroU32, sync::Arc};
 
 #[cfg(feature = "reflect")]
 use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
@@ -95,11 +92,19 @@ impl Default for Text3dStyling {
     }
 }
 
+/// Size of a segment.
+#[derive(Debug, Clone, Copy)]
+pub enum SegmentSize {
+    Flat(f32),
+    Multiply(f32),
+}
+
 /// Text style of a segment.
 #[derive(Debug, Default, Clone)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SegmentStyle {
     pub font: Option<Arc<str>>,
+    pub size: Option<SegmentSize>,
     pub fill_color: Option<Srgba>,
     pub stroke_color: Option<Srgba>,
     pub fill: Option<bool>,
@@ -108,7 +113,7 @@ pub struct SegmentStyle {
     pub style: Option<Style>,
     pub underline: Option<bool>,
     pub strikethrough: Option<bool>,
-    /// Can be referenced by [`GlyphMeta::MagicNumber`].
+    /// Can be referenced by [`GlyphMeta::MagicNumber`](crate::GlyphMeta::MagicNumber).
     pub magic_number: Option<f32>,
 }
 
@@ -116,15 +121,26 @@ impl SegmentStyle {
     pub fn as_attr<'t>(&'t self, base: &'t Text3dStyling) -> Attrs<'t> {
         let family_name = self.font.as_ref().map(Arc::as_ref).unwrap_or(&base.font);
         let family = family(family_name);
-        Attrs::new()
-            .weight(self.weight.unwrap_or(base.weight).into())
-            .style(self.style.unwrap_or(base.style).into())
-            .family(family)
+
+        match self.size {
+            Some(SegmentSize::Flat(size)) => {
+                Attrs::new().metrics(Metrics::new(size, size * base.line_height))
+            }
+            Some(SegmentSize::Multiply(size)) => {
+                let size = base.size * size;
+                Attrs::new().metrics(Metrics::new(size, size * base.line_height))
+            }
+            None => Attrs::new(),
+        }
+        .weight(self.weight.unwrap_or(base.weight).into())
+        .style(self.style.unwrap_or(base.style).into())
+        .family(family)
     }
 
     pub fn join(&self, other: Self) -> Self {
         SegmentStyle {
             font: other.font.or_else(|| self.font.clone()),
+            size: other.size.or(self.size),
             fill_color: other.fill_color.or(self.fill_color),
             stroke_color: other.stroke_color.or(self.stroke_color),
             fill: other.fill.or(self.fill),
@@ -143,7 +159,8 @@ pub struct GlyphEntry {
     pub font: ID,
     pub glyph_id: GlyphTextureOf,
     pub join: StrokeJoin,
-    pub size: FloatOrd,
+    /// Multiplied by scale factor.
+    pub real_size: FloatDecimal,
     pub weight: Weight,
     pub stroke: Option<NonZeroU32>,
 }
@@ -158,5 +175,22 @@ pub enum GlyphTextureOf {
 impl From<u16> for GlyphTextureOf {
     fn from(id: u16) -> Self {
         GlyphTextureOf::Id(id)
+    }
+}
+
+/// A floating point hashmap key
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct FloatDecimal(i32);
+
+impl FloatDecimal {
+    pub fn new(input: f32) -> Self {
+        Self((input * 100.).round() as i32)
+    }
+}
+
+impl Debug for FloatDecimal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = self.0 as f32 / 100.;
+        f.debug_tuple("FloatDecimal").field(&value).finish()
     }
 }

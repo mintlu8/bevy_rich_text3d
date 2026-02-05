@@ -14,7 +14,7 @@ use crate::styling::GlyphEntry;
 #[cfg(feature = "reflect")]
 use bevy::{ecs::reflect::ReflectComponent, reflect::Reflect};
 
-/// Backing image handle and atlas of [`Text3d`].
+/// Backing image handle and atlas of [`Text3d`](crate::Text3d).
 #[derive(Debug, Clone, Default, Asset)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(not(feature = "reflect"), derive(bevy::reflect::TypePath))]

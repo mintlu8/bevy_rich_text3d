@@ -2,13 +2,13 @@ use std::num::NonZero;
 
 use bevy::{
     image::Image,
-    math::{FloatOrd, Rect, Vec2},
+    math::{Rect, Vec2},
 };
 use cosmic_text::{fontdb::ID, FontSystem, LayoutGlyph};
 use ttf_parser::Face;
 
 use crate::{
-    styling::{GlyphEntry, GlyphTextureOf},
+    styling::{FloatDecimal, GlyphEntry, GlyphTextureOf},
     tess::PathEncoder,
     SegmentStyle, Text3dSegment, Text3dStyling, TextAtlas,
 };
@@ -235,7 +235,7 @@ impl LineMode {
             font,
             glyph_id: (*self).into(),
             join: style.stroke_join,
-            size: FloatOrd(style.size),
+            real_size: FloatDecimal::new(style.size * scale_factor),
             weight: attrs.weight.unwrap_or(style.weight),
             stroke,
         };

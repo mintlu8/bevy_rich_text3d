@@ -5,16 +5,25 @@
 //! Should fail eventually if reached wgpu's texture limit.
 
 use bevy::{
-    DefaultPlugins, app::{App, Startup, Update}, asset::{AssetServer, Assets}, color::{Color, Srgba}, ecs::{
+    app::{App, Startup, Update},
+    asset::{AssetServer, Assets},
+    camera::Camera2d,
+    color::{Color, Srgba},
+    ecs::{
         component::Component,
         hierarchy::ChildOf,
         message::MessageReader,
         query::{Changed, With},
         system::Query,
-    }, image::Image, input::keyboard::{KeyCode, KeyboardInput}, light::GlobalAmbientLight, math::{Vec2, Vec3}, pbr::{MeshMaterial3d, StandardMaterial}, prelude::{
-        AlphaMode, Camera3d, Commands, Mesh, Mesh3d, OrthographicProjection, Plane3d, Projection,
-        Res, ResMut, Transform,
-    }
+    },
+    image::Image,
+    input::keyboard::{KeyCode, KeyboardInput},
+    light::GlobalAmbientLight,
+    math::{Vec2, Vec3},
+    mesh::Mesh2d,
+    prelude::{Commands, Mesh, Plane3d, Res, ResMut, Transform},
+    sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
+    DefaultPlugins,
 };
 use bevy_rectray::{Anchor, Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D};
 use bevy_rich_text3d::{
@@ -30,6 +39,7 @@ pub fn main() {
             load_system_fonts: true,
             scale_factor: 2.0,
             sync_scale_factor_with_main_window: false,
+            double_scale_factor_threshold: 12.,
             ..Default::default()
         })
         .insert_resource(GlobalAmbientLight {
@@ -57,23 +67,21 @@ fn rectray_sync(
 fn setup(
     mut commands: Commands,
     server: Res<AssetServer>,
-    mut standard_materials: ResMut<Assets<StandardMaterial>>,
+    mut standard_materials: ResMut<Assets<ColorMaterial>>,
     mut images: ResMut<Assets<Image>>,
     mut atlases: ResMut<Assets<TextAtlas>>,
 ) {
     let image = images.add(TextAtlas::empty_image(2048, 512));
     let atlas = atlases.add(TextAtlas::new(image.clone()));
-    let doubling_mat = standard_materials.add(StandardMaterial {
-        base_color_texture: Some(image.clone()),
-        alpha_mode: AlphaMode::Blend,
-        unlit: true,
+    let doubling_mat = standard_materials.add(ColorMaterial {
+        texture: Some(image.clone()),
+        alpha_mode: AlphaMode2d::Blend,
         ..Default::default()
     });
 
-    let default_mat = standard_materials.add(StandardMaterial {
-        base_color_texture: Some(TextAtlas::DEFAULT_IMAGE),
-        alpha_mode: AlphaMode::Blend,
-        unlit: true,
+    let default_mat = standard_materials.add(ColorMaterial {
+        texture: Some(TextAtlas::DEFAULT_IMAGE),
+        alpha_mode: AlphaMode2d::Blend,
         ..Default::default()
     });
 
@@ -81,10 +89,10 @@ fn setup(
         .spawn((RectrayWindow, RectrayFrame::default()))
         .id();
 
-    let purpose = "Press space to increase font size.\n\n\
+    let purpose = "{#24:Press space to increase font size.}\n\n\
         This will increase the number of glyphs cached. \
         The texture will double in height if full, \
-        and will eventually fail if reaching texture size limit. \
+        and will eventually panic if reaching texture size limit. \
         The bottom entry shouldn't be affected even if the texture doubles.
     ";
 
@@ -94,7 +102,6 @@ fn setup(
         Text3dStyling {
             size: 12.,
             color: Srgba::WHITE,
-            //world_scale: Some(Vec2::splat(12.)),
             ..Default::default()
         },
         Text3dBounds { width: 600. },
@@ -102,8 +109,8 @@ fn setup(
             anchor: Anchor::TOP_LEFT,
             ..Default::default()
         },
-        Mesh3d::default(),
-        MeshMaterial3d(default_mat.clone()),
+        Mesh2d::default(),
+        MeshMaterial2d(default_mat.clone()),
     ));
 
     commands.spawn((
@@ -115,8 +122,8 @@ fn setup(
         },
         Text3dBounds { width: 600. },
         TextAtlasHandle(atlas.clone()),
-        Mesh3d::default(),
-        MeshMaterial3d(doubling_mat.clone()),
+        Mesh2d::default(),
+        MeshMaterial2d(doubling_mat.clone()),
         Transform::from_xyz(300., 150., 0.),
         First,
     ));
@@ -130,19 +137,18 @@ fn setup(
         },
         Text3dBounds { width: 600. },
         TextAtlasHandle(atlas.clone()),
-        Mesh3d::default(),
-        MeshMaterial3d(doubling_mat.clone()),
+        Mesh2d::default(),
+        MeshMaterial2d(doubling_mat.clone()),
         Transform::from_xyz(300., -150., 0.),
     ));
 
     commands.spawn((
-        Mesh3d(server.add(Mesh::from(Plane3d::new(Vec3::Z, Vec2::new(200., 200.))))),
-        MeshMaterial3d(doubling_mat.clone()),
+        Mesh2d(server.add(Mesh::from(Plane3d::new(Vec3::Z, Vec2::new(200., 200.))))),
+        MeshMaterial2d(doubling_mat.clone()),
         Transform::from_xyz(-300., 0., 0.),
     ));
     commands.spawn((
-        Camera3d::default(),
-        Projection::Orthographic(OrthographicProjection::default_3d()),
+        Camera2d,
         Transform::from_translation(Vec3::new(0., 0., 1.))
             .looking_at(Vec3::new(0., 0., 0.), Vec3::Y),
     ));

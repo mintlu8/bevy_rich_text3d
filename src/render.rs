@@ -6,7 +6,7 @@ use bevy::{
         world::{Mut, Ref},
     },
     image::Image,
-    math::{FloatOrd, IVec2, Rect, Vec2, Vec3, Vec4},
+    math::{IVec2, Rect, Vec2, Vec3, Vec4},
     mesh::{Indices, Mesh, Mesh2d, Mesh3d, PrimitiveTopology, VertexAttributeValues},
 };
 use cosmic_text::{Attrs, Buffer, Family, FontSystem, LayoutGlyph, Metrics, Shaping, Weight, Wrap};
@@ -18,7 +18,7 @@ use crate::{
     layers::{DrawRequest, DrawType, Layer},
     line::LineRun,
     mesh_util::ExtractedMesh,
-    styling::GlyphEntry,
+    styling::{FloatDecimal, GlyphEntry},
     tess::PathEncoder,
     text3d::{Text3d, Text3dSegment},
     SegmentStyle, StrokeJoin, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyling,
@@ -228,6 +228,12 @@ pub fn text_render(
 
                 let magic_number = attrs.magic_number.unwrap_or(0.);
 
+                let scale_factor = if glyph.font_size <= settings.double_scale_factor_threshold {
+                    scale_factor * 2.0
+                } else {
+                    scale_factor
+                };
+
                 for DrawRequest {
                     request,
                     color,
@@ -388,7 +394,7 @@ fn get_atlas_rect(
         .get(&GlyphEntry {
             font: glyph.font_id,
             glyph_id: glyph.glyph_id.into(),
-            size: FloatOrd(glyph.font_size),
+            real_size: FloatDecimal::new(glyph.font_size * scale_factor),
             weight: styling.weight,
             join: styling.stroke_join,
             stroke,
@@ -431,7 +437,7 @@ pub(crate) fn cache_glyph(
     let entry = GlyphEntry {
         font: glyph.font_id,
         glyph_id: glyph.glyph_id.into(),
-        size: FloatOrd(glyph.font_size),
+        real_size: FloatDecimal::new(glyph.font_size * scale_factor),
         weight: weight.into(),
         stroke,
         join: stroke_join,

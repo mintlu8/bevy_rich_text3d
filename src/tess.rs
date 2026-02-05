@@ -80,7 +80,8 @@ impl PathEncoder {
             let base = Vec2::new(boundary.left(), boundary.top());
             let pixel_rect = atlas.cache(image, entry, base, w, h);
             let stroke = Stroke {
-                width: stroke,
+                // Different from the original zeno implementation.
+                width: stroke * 2.0,
                 miter_limit: 4.0,
                 line_cap: LineCap::Round,
                 line_join: entry.join.into(),

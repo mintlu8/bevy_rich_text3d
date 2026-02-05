@@ -18,6 +18,8 @@ mod render;
 mod styling;
 mod tess;
 mod text3d;
+use core::f32;
+
 pub use prepare::{DrawStyle, FontSystemGuard, TextProgressReportCallback, TextRenderer};
 
 pub use atlas::{TextAtlas, TextAtlasHandle};
@@ -48,7 +50,7 @@ pub use fetch::{FetchedTextSegment, SharedTextSegment, TextFetch};
 use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
 pub use misc::*;
 pub use parse::ParseError;
-pub use styling::{SegmentStyle, Text3dStyling};
+pub use styling::{SegmentSize, SegmentStyle, Text3dStyling};
 pub use text3d::{Text3d, Text3dSegment};
 
 fn synchronize_scale_factor(
@@ -69,7 +71,7 @@ fn synchronize_scale_factor(
     }
 }
 
-/// Text3d Plugin, add [`Text3dPluginSettings`] before this to modify its behavior.
+/// Text3d Plugin.
 #[derive(Debug, Resource, Clone)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Resource, Default))]
@@ -90,6 +92,12 @@ pub struct Text3dPlugin {
     ///
     /// If the window's scale factor changes, ALL text will be redrawn.
     pub sync_scale_factor_with_main_window: bool,
+    /// If size is less than or equal to this value, double the scale factor used.
+    ///
+    /// This can produce better results for smaller text since we cannot perform hinting unlike `bevy_ui`.
+    ///
+    /// For more complex behaviors, use `world_scale`.
+    pub double_scale_factor_threshold: f32,
     /// System locale, like `en-US`.
     pub locale: Option<String>,
     /// If true, load system fonts,
@@ -124,6 +132,7 @@ impl Default for Text3dPlugin {
         Self {
             default_atlas_dimension: (1024, 1024),
             scale_factor: 1.0,
+            double_scale_factor_threshold: f32::NEG_INFINITY,
             sync_scale_factor_with_main_window: true,
             load_system_fonts: false,
             asynchronous_load: false,
