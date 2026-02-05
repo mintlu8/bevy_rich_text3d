@@ -239,6 +239,7 @@ pub fn text_render(
                     color,
                     offset,
                     sort: layer,
+                    category,
                 } in draw_requests.drain(..)
                 {
                     match request {
@@ -275,6 +276,7 @@ pub fn text_render(
                                 real_index,
                                 advance + dw,
                                 magic_number,
+                                category,
                                 &styling,
                                 &mut rng.0,
                             );
@@ -341,6 +343,7 @@ pub fn text_render(
                                     real_index,
                                     advance + min,
                                     magic_number,
+                                    category,
                                     &styling,
                                     &mut rng.0,
                                 );

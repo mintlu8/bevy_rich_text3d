@@ -19,6 +19,12 @@ pub enum GlyphMeta {
     UvX,
     /// The `uv.y` as if the text block is a rectangular sprite.
     UvY,
+    /// Returns `0` for left corner and `1` for right corners.
+    GlyphUvX,
+    /// Returns `0` for bottom corner and `1` for top corners.
+    GlyphUvY,
+    /// Returns `0` for fill, `1` for stroke, `2` for shadow.
+    Category,
     /// The [`SegmentStyle::magic_number`](crate::SegmentStyle::magic_number) field
     MagicNumber,
 }
@@ -112,22 +118,6 @@ impl MeshExportEntry {
 pub struct MeshExportCache {
     pub(crate) entry: MeshExportEntry,
     pub(crate) data: MeshExportCacheData,
-}
-
-fn split4_slices<T>(arr: &mut [T], from: usize) -> [&mut [T]; 4] {
-    let (_, first) = arr.split_at_mut(from);
-    let (first, second) = first.split_at_mut(1);
-    let (second, third) = second.split_at_mut(1);
-    let (third, fourth) = third.split_at_mut(1);
-    [first, second, third, fourth]
-}
-
-fn split4<T>(arr: &mut [T], from: usize) -> [&mut T; 4] {
-    let (_, first) = arr.split_at_mut(from);
-    let (first, second) = first.split_at_mut(1);
-    let (second, third) = second.split_at_mut(1);
-    let (third, fourth) = third.split_at_mut(1);
-    [&mut first[0], &mut second[0], &mut third[0], &mut fourth[0]]
 }
 
 pub enum MeshExportCacheData {
@@ -241,5 +231,19 @@ impl From<MeshExportCacheData> for VertexAttributeValues {
             MeshExportCacheData::F3(items) => VertexAttributeValues::Float32x3(items),
             MeshExportCacheData::F4(items) => VertexAttributeValues::Float32x4(items),
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum TextMeshFaceCategory {
+    Fill = 0,
+    Stroke = 1,
+    Shadow = 2,
+}
+
+impl TextMeshFaceCategory {
+    pub fn as_value(&self) -> f32 {
+        (*self) as u8 as f32
     }
 }

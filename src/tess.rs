@@ -37,10 +37,6 @@ impl OutlineBuilder for PathEncoder {
 }
 
 impl PathEncoder {
-    pub fn clear(&mut self) {
-        self.commands.clear();
-    }
-
     pub fn push_rect(&mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32) {
         if let Some(rect) = SkiaRect::from_ltrb(min_x, min_y, max_x, max_y) {
             self.commands.push_rect(rect);

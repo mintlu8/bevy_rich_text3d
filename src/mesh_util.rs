@@ -6,7 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    export::{MeshExportCache, MeshExportCacheData},
+    export::{MeshExportCache, MeshExportCacheData, TextMeshFaceCategory},
     layers::Layer,
     GlyphMeta, Text3dStyling,
 };
@@ -136,6 +136,7 @@ impl<'t> ExtractedMesh<'t> {
         real_index: usize,
         advance: f32,
         magic_number: f32,
+        category: TextMeshFaceCategory,
         styling: &Text3dStyling,
         rng: &mut fastrand::Rng,
     ) {
@@ -151,6 +152,7 @@ impl<'t> ExtractedMesh<'t> {
             real_index,
             advance,
             magic_number,
+            category,
             styling,
             rng,
         );
@@ -165,6 +167,7 @@ impl<'t> ExtractedMesh<'t> {
         real_index: usize,
         advance: f32,
         magic_number: f32,
+        category: TextMeshFaceCategory,
         styling: &Text3dStyling,
         rng: &mut fastrand::Rng,
     ) {
@@ -204,8 +207,11 @@ impl<'t> ExtractedMesh<'t> {
                         }
                         GlyphMeta::RandomPerGlyph => *item = random_per_glyph,
                         GlyphMeta::RandomPerVertex => *item = rng.f32(),
+                        GlyphMeta::GlyphUvX => *item = if vertex & 1 == 0 { 0.0 } else { 1.0 },
+                        GlyphMeta::GlyphUvY => *item = if vertex < 2 { 0.0 } else { 1.0 },
                         GlyphMeta::UvX => (),
                         GlyphMeta::UvY => (),
+                        GlyphMeta::Category => *item = category.as_value(),
                     });
             }
         }
