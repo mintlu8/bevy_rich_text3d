@@ -105,7 +105,7 @@ pub fn text_render(
     for (text, bounds, styling, atlas, mut mesh2d, mut mesh3d, mut output) in text_query.iter_mut()
     {
         let Some(atlas) = atlases.get_mut(atlas.0.id()) else {
-            return;
+            continue;
         };
 
         if atlas.image.id() == AssetId::default() || !images.contains(atlas.image.id()) {
@@ -116,7 +116,7 @@ pub fn text_render(
         };
 
         let Some(image) = images.get_mut(atlas.image.id()) else {
-            return;
+            continue;
         };
 
         // Change detection.
