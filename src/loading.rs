@@ -20,11 +20,6 @@ impl Text3dPlugin {
             .or_else(sys_locale::get_locale)
             .unwrap_or_else(|| "en-US".to_string());
         let mut system = cosmic_text::FontSystem::new_with_locale_and_db(locale, empty);
-        system.db_mut().load_font_data(create_emoji_font(
-            &self.placeholder_family,
-            &self.placeholder_glyph_widths,
-            self.placeholder_glyph_origin,
-        ));
         if self.load_system_fonts {
             system.db_mut().load_system_fonts();
         }
@@ -39,6 +34,28 @@ impl Text3dPlugin {
         for data in fonts.font_embedded {
             system.db_mut().load_font_data(data.to_vec());
         }
+        if !self.serif_family.is_empty() {
+            system.db_mut().set_serif_family(&self.serif_family);
+        }
+        if !self.sans_serif_family.is_empty() {
+            system
+                .db_mut()
+                .set_sans_serif_family(&self.sans_serif_family);
+        }
+        if !self.cursive_family.is_empty() {
+            system.db_mut().set_cursive_family(&self.cursive_family);
+        }
+        if !self.monospace_family.is_empty() {
+            system.db_mut().set_monospace_family(&self.monospace_family);
+        }
+        if !self.fantasy_family.is_empty() {
+            system.db_mut().set_fantasy_family(&self.fantasy_family);
+        }
+        system.db_mut().load_font_data(create_emoji_font(
+            &self.placeholder_family,
+            &self.placeholder_glyph_widths,
+            self.placeholder_glyph_origin,
+        ));
         TextRenderer::new(system)
     }
 
@@ -52,21 +69,12 @@ impl Text3dPlugin {
         let sender = Arc::new(OnceLock::new());
         let receiver = sender.clone();
 
-        let system_fonts = self.load_system_fonts;
-
-        let placeholder_name = self.placeholder_family.clone();
-        let placeholders = self.placeholder_glyph_widths.clone();
-        let placeholders_origin = self.placeholder_glyph_origin;
+        let settings = self.clone();
 
         std::thread::spawn(move || {
             let empty = cosmic_text::fontdb::Database::new();
             let mut system = cosmic_text::FontSystem::new_with_locale_and_db(locale, empty);
-            system.db_mut().load_font_data(create_emoji_font(
-                &placeholder_name,
-                &placeholders,
-                placeholders_origin,
-            ));
-            if system_fonts {
+            if settings.load_system_fonts {
                 system.db_mut().load_system_fonts();
             }
             for path in fonts.font_paths {
@@ -80,6 +88,30 @@ impl Text3dPlugin {
             for data in fonts.font_embedded {
                 system.db_mut().load_font_data(data.to_vec());
             }
+            if !settings.serif_family.is_empty() {
+                system.db_mut().set_serif_family(&settings.serif_family);
+            }
+            if !settings.sans_serif_family.is_empty() {
+                system
+                    .db_mut()
+                    .set_sans_serif_family(&settings.sans_serif_family);
+            }
+            if !settings.cursive_family.is_empty() {
+                system.db_mut().set_cursive_family(&settings.cursive_family);
+            }
+            if !settings.monospace_family.is_empty() {
+                system
+                    .db_mut()
+                    .set_monospace_family(&settings.monospace_family);
+            }
+            if !settings.fantasy_family.is_empty() {
+                system.db_mut().set_fantasy_family(&settings.fantasy_family);
+            }
+            system.db_mut().load_font_data(create_emoji_font(
+                &settings.placeholder_family,
+                &settings.placeholder_glyph_widths,
+                settings.placeholder_glyph_origin,
+            ));
             sender.set(TextRenderer::new(system))
         });
         LoadCosmicFonts(receiver)

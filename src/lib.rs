@@ -125,6 +125,16 @@ pub struct Text3dPlugin {
     pub placeholder_glyph_origin: char,
     /// Placeholder glyphs, does not need to be specified by the user.
     pub placeholder_glyphs_generated: Vec<(f32, String)>,
+    /// If not empty, set the default serif font.
+    pub serif_family: String,
+    /// If not empty, set the default sans serif font.
+    pub sans_serif_family: String,
+    /// If not empty, set the default cursive font.
+    pub cursive_family: String,
+    /// If not empty, set the default monospace font.
+    pub monospace_family: String,
+    /// If not empty, set the default fantasy font.
+    pub fantasy_family: String,
 }
 
 impl Text3dPlugin {
@@ -163,6 +173,11 @@ impl Default for Text3dPlugin {
             load_system_fonts: false,
             asynchronous_load: false,
             locale: None,
+            serif_family: String::new(),
+            sans_serif_family: String::new(),
+            cursive_family: String::new(),
+            monospace_family: String::new(),
+            fantasy_family: String::new(),
             placeholder_family: "_Placeholder".into(),
             placeholder_glyph_widths: vec![
                 0.1,
