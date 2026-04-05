@@ -67,7 +67,7 @@ impl Text3dStyling {
                 request: DrawType::Image(image.id()),
                 color,
                 offset: Vec2::ZERO,
-                category: TextMeshFaceCategory::Fill,
+                category: TextMeshFaceCategory::Image,
             });
             return;
         }

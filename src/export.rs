@@ -3,6 +3,7 @@ use bevy::mesh::{Mesh, MeshVertexAttribute, VertexAttributeValues};
 /// Determines what kind of data each field in [`MeshExport`] carry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
+#[non_exhaustive]
 pub enum GlyphMeta {
     /// Left to right count of the glyph, `0`, `1`, etc.
     #[default]
@@ -19,11 +20,11 @@ pub enum GlyphMeta {
     UvX,
     /// The `uv.y` as if the text block is a rectangular sprite.
     UvY,
-    /// Returns `0` for left corner and `1` for right corners.
+    /// Returns `0` for left corners and `1` for right corners.
     GlyphUvX,
-    /// Returns `0` for bottom corner and `1` for top corners.
+    /// Returns `0` for bottom corners and `1` for top corners.
     GlyphUvY,
-    /// Returns `0` for fill, `1` for stroke, `2` for shadow.
+    /// Returns `0` for fill, `1` for stroke, `2` for shadow, `3` for image/emoji.
     Category,
     /// The [`SegmentStyle::magic_number`](crate::SegmentStyle::magic_number) field
     MagicNumber,
@@ -240,9 +241,14 @@ pub enum TextMeshFaceCategory {
     Fill = 0,
     Stroke = 1,
     Shadow = 2,
+    Image = 3,
 }
 
 impl TextMeshFaceCategory {
+    /// Alias for [`TextMeshFaceCategory::Image`].
+    #[allow(nonstandard_style)]
+    pub const Emoji: Self = Self::Image;
+
     pub fn as_value(&self) -> f32 {
         (*self) as u8 as f32
     }

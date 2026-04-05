@@ -254,7 +254,7 @@ pub fn text_render(
                 let Some((seg, attrs)) = text.segments.get(glyph.metadata) else {
                     continue;
                 };
-                let dx = -run.line_w * styling.align.as_fac();
+                let line_start = -run.line_w * styling.align.as_fac();
 
                 styling.fill_draw_requests(seg, attrs, &mut draw_requests);
 
@@ -289,15 +289,15 @@ pub fn text_render(
                                 continue;
                             };
 
-                            let dw = glyph.x + base.x;
+                            let line_advance = glyph.x + base.x;
 
-                            min_x = min_x.min(dw + dx);
-                            max_x = max_x.max(dw + dx + glyph.w);
+                            min_x = min_x.min(line_start + line_advance);
+                            max_x = max_x.max(line_start + line_advance + glyph.w);
 
                             let base = Vec2::new(glyph.x, glyph.y)
                                 + base
                                 + offset
-                                + Vec2::new(dx, -run.line_y);
+                                + Vec2::new(line_start, -run.line_y);
 
                             mesh.cache_rectangle(
                                 base,
@@ -306,7 +306,7 @@ pub fn text_render(
                                 color,
                                 layer,
                                 real_index,
-                                advance + dw,
+                                advance + line_advance,
                                 magic_number,
                                 category,
                                 &styling,
@@ -343,12 +343,12 @@ pub fn text_render(
                             let w = bb.width() as f32 / units_per_em as f32 * glyph.font_size;
                             let h = bb.height() as f32 / units_per_em as f32 * glyph.font_size;
 
-                            min_x = min_x.min(dx + glyph.x);
-                            max_x = max_x.max(dx + glyph.x + w);
+                            min_x = min_x.min(line_start + glyph.x);
+                            max_x = max_x.max(line_start + glyph.x + w);
 
                             let base = Vec2::new(glyph.x + bx, glyph.y + by)
                                 + offset
-                                + Vec2::new(dx, -run.line_y);
+                                + Vec2::new(line_start, -run.line_y);
 
                             mesh.cache_rectangle(
                                 base,
@@ -405,8 +405,8 @@ pub fn text_render(
                                     continue;
                                 };
                                 let rect = Rect {
-                                    min: rect.min + offset + Vec2::new(dx, -run.line_y),
-                                    max: rect.max + offset + Vec2::new(dx, -run.line_y),
+                                    min: rect.min + offset + Vec2::new(line_start, -run.line_y),
+                                    max: rect.max + offset + Vec2::new(line_start, -run.line_y),
                                 };
                                 let result_rect = Rect {
                                     min: Vec2::new(
