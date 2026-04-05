@@ -119,7 +119,7 @@ impl Text3d {
     /// We trim whitespaces before passing arguments to these functions.
     pub fn parse(
         text: &str,
-        mut fetch_string: impl FnMut(&str) -> Result<Text3dSegment, ParseError>,
+        mut fetch_string: impl FnMut(&str) -> Result<(Text3dSegment, SegmentStyle), ParseError>,
         mut stylesheet: impl FnMut(&str) -> Result<SegmentStyle, ParseError>,
     ) -> Result<Self, ParseError> {
         #[derive(Debug, Clone, Copy)]
@@ -171,7 +171,9 @@ impl Text3d {
                     let _ = styles.pop();
                 }
                 ('}', Command) => {
-                    segments.push((fetch_string(buffer.trim())?, style!().clone()));
+                    let (segment, style) = fetch_string(buffer.trim())?;
+                    let style = style!().clone().join(style);
+                    segments.push((segment, style));
                     buffer.clear();
                     state = Text;
                 }

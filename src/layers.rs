@@ -3,9 +3,11 @@ use std::{
     ops::{BitOr, BitOrAssign},
 };
 
-use bevy::{color::Srgba, math::Vec2};
+use bevy::{asset::AssetId, color::Srgba, image::Image, math::Vec2};
 
-use crate::{export::TextMeshFaceCategory, line::LineMode, SegmentStyle, Text3dStyling};
+use crate::{
+    export::TextMeshFaceCategory, line::LineMode, SegmentStyle, Text3dSegment, Text3dStyling,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Layer(u8);
@@ -38,6 +40,7 @@ impl Layer {
 pub enum DrawType {
     Glyph(Option<NonZero<u32>>),
     Line(Option<NonZero<u32>>, LineMode),
+    Image(AssetId<Image>),
 }
 
 pub struct DrawRequest {
@@ -50,8 +53,24 @@ pub struct DrawRequest {
 
 impl Text3dStyling {
     /// Note: Things drawn last gets rendered first.
-    pub(crate) fn fill_draw_requests(&self, attrs: &SegmentStyle, requests: &mut Vec<DrawRequest>) {
+    pub(crate) fn fill_draw_requests(
+        &self,
+        segment: &Text3dSegment,
+        attrs: &SegmentStyle,
+        requests: &mut Vec<DrawRequest>,
+    ) {
         requests.clear();
+        if let Text3dSegment::Image { image, .. } = segment {
+            let color = attrs.fill_color.unwrap_or(self.color);
+            requests.push(DrawRequest {
+                sort: Layer::None,
+                request: DrawType::Image(image.id()),
+                color,
+                offset: Vec2::ZERO,
+                category: TextMeshFaceCategory::Image,
+            });
+            return;
+        }
         #[allow(non_snake_case)]
         let FILL = if self.stroke_in_front {
             Layer::None

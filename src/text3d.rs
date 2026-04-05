@@ -1,8 +1,12 @@
-use bevy::ecs::{
-    component::Component,
-    entity::Entity,
-    lifecycle::HookContext,
-    world::{DeferredWorld, Mut},
+use bevy::{
+    asset::Handle,
+    ecs::{
+        component::Component,
+        entity::Entity,
+        lifecycle::HookContext,
+        world::{DeferredWorld, Mut},
+    },
+    image::Image,
 };
 #[cfg(feature = "reflect")]
 use bevy::{ecs::reflect::ReflectComponent, reflect::Reflect};
@@ -29,8 +33,22 @@ pub struct Text3d {
 #[derive(Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub enum Text3dSegment {
+    /// A string segment.
     String(String),
+    /// [`FetchedTextSegment`](crate::FetchedTextSegment) on an entity.
     Extract(Entity),
+    /// Renders an image or emoji inside the text.
+    ///
+    /// # Limitations
+    ///
+    /// The image will be copied into the text atlas as is regardless of font size.
+    /// The image is only loaded once and cannot change.
+    Image {
+        /// Image asset.
+        image: Handle<Image>,
+        /// Represents width / em, usually `1.0` for squares.
+        width: f32,
+    },
 }
 
 fn text_3d_on_remove(mut world: DeferredWorld, cx: HookContext) {
@@ -45,6 +63,7 @@ fn text_3d_on_remove(mut world: DeferredWorld, cx: HookContext) {
         .iter()
         .filter_map(|x| match &x.0 {
             Text3dSegment::String(_) => None,
+            Text3dSegment::Image { .. } => None,
             Text3dSegment::Extract(entity) => Some(*entity),
         })
         .collect();

@@ -231,7 +231,7 @@ impl LineMode {
         style: &Text3dStyling,
         stroke: Option<NonZero<u32>>,
     ) -> Option<Rect> {
-        let entry = GlyphEntry {
+        let entry = GlyphEntry::Glyph {
             font,
             glyph_id: (*self).into(),
             join: style.stroke_join,
@@ -243,7 +243,7 @@ impl LineMode {
             .glyphs
             .get(&entry)
             .copied()
-            .map(|(a, _)| a)
+            .map(|(a, _)| a.as_rect())
             .or_else(|| {
                 font_system
                     .db()
@@ -288,6 +288,6 @@ impl LineMode {
 
         tess_commands
             .tess_glyph(stroke, 1., atlas, image, entry)
-            .map(|(x, _)| x)
+            .map(|(x, _)| x.as_rect())
     }
 }

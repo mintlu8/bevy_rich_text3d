@@ -1,4 +1,6 @@
 use crate::{prepare::family, MeshExport, StrokeJoin, Style, TextAlign, TextAnchor, Weight};
+use bevy::asset::AssetId;
+use bevy::image::Image;
 use bevy::{color::Srgba, ecs::component::Component, math::Vec2};
 use cosmic_text::Metrics;
 use cosmic_text::{fontdb::ID, Attrs};
@@ -155,14 +157,17 @@ impl SegmentStyle {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct GlyphEntry {
-    pub font: ID,
-    pub glyph_id: GlyphTextureOf,
-    pub join: StrokeJoin,
-    /// Multiplied by scale factor.
-    pub real_size: FloatDecimal,
-    pub weight: Weight,
-    pub stroke: Option<NonZeroU32>,
+pub enum GlyphEntry {
+    Glyph {
+        font: ID,
+        glyph_id: GlyphTextureOf,
+        join: StrokeJoin,
+        /// Multiplied by scale factor.
+        real_size: FloatDecimal,
+        weight: Weight,
+        stroke: Option<NonZeroU32>,
+    },
+    Image(AssetId<Image>),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

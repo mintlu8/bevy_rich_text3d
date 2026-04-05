@@ -5,6 +5,7 @@
 mod atlas;
 mod change_detection;
 mod color_table;
+mod emoji;
 mod export;
 mod fetch;
 mod layers;
@@ -18,7 +19,6 @@ mod render;
 mod styling;
 mod tess;
 mod text3d;
-use core::f32;
 
 pub use prepare::{DrawStyle, FontSystemGuard, TextProgressReportCallback, TextRenderer};
 
@@ -36,6 +36,7 @@ use bevy::{
         world::Ref,
     },
     image::Image,
+    math::FloatOrd,
     transform::TransformSystems,
     window::{PrimaryWindow, Window},
 };
@@ -112,6 +113,31 @@ pub struct Text3dPlugin {
     /// Must add `TouchTextMaterial*dPlugin`s to non-standard materials, otherwise
     /// text drawn before font system is loaded will not be rendered.
     pub asynchronous_load: bool,
+    /// Family name for placeholder glyphs used for placing emojis.
+    pub placeholder_family: String,
+    /// Pre-defines all glyph widths used by emojis, this generates a placeholder font containing glyphs with various sizes.
+    ///
+    /// Value represents `value * em`, so `1.0` represents a square.
+    ///
+    /// Emoji rendered will choose the placeholder glyph closest in width.
+    pub placeholder_glyph_widths: Vec<f32>,
+    /// The first character used in placeholder glyphs, usually '!'.
+    pub placeholder_glyph_origin: char,
+    /// Placeholder glyphs, does not need to be specified by the user.
+    pub placeholder_glyphs_generated: Vec<(f32, String)>,
+}
+
+impl Text3dPlugin {
+    pub fn get_placeholder_glyph(&self, size: f32) -> &str {
+        let Some((_, s)) = self
+            .placeholder_glyphs_generated
+            .iter()
+            .min_by_key(|(s, _)| FloatOrd((size - *s).abs()))
+        else {
+            return " ";
+        };
+        s
+    }
 }
 
 /// A [`Resource`] that contains paths of fonts to be loaded.
@@ -137,6 +163,31 @@ impl Default for Text3dPlugin {
             load_system_fonts: false,
             asynchronous_load: false,
             locale: None,
+            placeholder_family: "_Placeholder".into(),
+            placeholder_glyph_widths: vec![
+                0.1,
+                0.2,
+                0.25,
+                1.0 / 3.0,
+                0.4,
+                0.5,
+                2.0 / 3.0,
+                0.75,
+                std::f32::consts::GOLDEN_RATIO / 2.,
+                1.0,
+                std::f32::consts::SQRT_2,
+                1.5,
+                std::f32::consts::GOLDEN_RATIO,
+                2.0,
+                2.5,
+                3.0,
+                3.5,
+                4.0,
+                5.0,
+                6.0,
+            ],
+            placeholder_glyph_origin: '!',
+            placeholder_glyphs_generated: Vec::new(),
         }
     }
 }
@@ -151,7 +202,22 @@ impl Plugin for Text3dPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<TextAtlas>();
         app.init_resource::<LoadFonts>();
-        app.insert_resource::<Text3dPlugin>(self.clone());
+        let mut res = self.clone();
+        res.placeholder_glyphs_generated = self
+            .placeholder_glyph_widths
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(i, x)| {
+                (
+                    x,
+                    char::from_u32(self.placeholder_glyph_origin as u32 + i as u32)
+                        .unwrap_or(' ')
+                        .to_string(),
+                )
+            })
+            .collect();
+        app.insert_resource::<Text3dPlugin>(res);
         let (x, y) = self.default_atlas_dimension;
         let _ = app
             .world_mut()

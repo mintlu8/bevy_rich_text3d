@@ -13,8 +13,8 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    FetchedTextSegment, ParseError, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment,
-    Text3dStyling, TextAlign, TextAtlas,
+    FetchedTextSegment, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
+    Text3dSegment, Text3dStyling, TextAlign, TextAtlas,
 };
 
 #[derive(Debug, Component)]
@@ -49,9 +49,9 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<StandardM
             "{s-20, s-black:<Time Bomb>}: Deals {orange:**explosion**} damage equal to {red:*fps*}, which is {s-20, s-black, red:{fps}}! __BOOM!__", 
             |s| {
                 if s == "fps" {
-                    Ok(Text3dSegment::Extract(
+                    Ok((Text3dSegment::Extract(
                         commands.spawn((FetchedTextSegment::EMPTY, FetchFPS)).id()
-                    ))
+                    ), SegmentStyle::default()))
                 } else {
                     Err(ParseError::Custom(format!("Bad value {s}.")))
                 }
