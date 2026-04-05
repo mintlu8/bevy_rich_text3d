@@ -245,10 +245,6 @@ pub enum TextMeshFaceCategory {
 }
 
 impl TextMeshFaceCategory {
-    /// Alias for [`TextMeshFaceCategory::Image`].
-    #[allow(nonstandard_style)]
-    pub const Emoji: Self = Self::Image;
-
     pub fn as_value(&self) -> f32 {
         (*self) as u8 as f32
     }
