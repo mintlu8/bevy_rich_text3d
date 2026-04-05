@@ -6,11 +6,11 @@ use bevy::{
         world::{Mut, Ref},
     },
     image::Image,
-    math::{IVec2, Rect, Vec2, Vec3, Vec4},
+    math::{IRect, IVec2, Rect, Vec2, Vec3, Vec4},
     mesh::{Indices, Mesh, Mesh2d, Mesh3d, PrimitiveTopology, VertexAttributeValues},
 };
 use cosmic_text::{Attrs, Buffer, Family, FontSystem, LayoutGlyph, Metrics, Shaping, Weight, Wrap};
-use std::num::NonZero;
+use std::{mem, num::NonZero};
 use ttf_parser::{Face, GlyphId};
 
 use crate::{
@@ -102,7 +102,8 @@ pub fn text_render(
     }
     let font_system = &mut lock.font_system;
     let scale_factor = settings.scale_factor;
-    for (text, bounds, styling, atlas, mut mesh2d, mut mesh3d, mut output) in text_query.iter_mut()
+    'main: for (text, bounds, styling, atlas, mut mesh2d, mut mesh3d, mut output) in
+        text_query.iter_mut()
     {
         let Some(atlas) = atlases.get_mut(atlas.0.id()) else {
             continue;
@@ -115,12 +116,26 @@ pub fn text_render(
             ))
         };
 
-        let Some(image) = images.get_mut(atlas.image.id()) else {
+        if !images.contains(atlas.image.id()) {
             continue;
-        };
+        }
+
+        for segment in &text.segments {
+            if let Text3dSegment::Image { image, .. } = &segment.0 {
+                if !images.contains(image) {
+                    output.initialized = false;
+                    continue 'main;
+                }
+            }
+        }
 
         // Change detection.
-        if !redraw && !text.is_changed() && !bounds.is_changed() && !styling.is_changed() {
+        if !redraw
+            && output.initialized
+            && !text.is_changed()
+            && !bounds.is_changed()
+            && !styling.is_changed()
+        {
             let mut unchanged = true;
             for segment in &text.segments {
                 if let Text3dSegment::Extract(entity) = &segment.0 {
@@ -183,8 +198,17 @@ pub fn text_render(
                                 .get(*e)
                                 .map(|x| x.into_inner().as_str())
                                 .unwrap_or(""),
+                            Text3dSegment::Image { image: _, width } => {
+                                settings.get_placeholder_glyph(*width)
+                            }
                         },
-                        style.as_attr(&styling).metadata(idx),
+                        match text {
+                            Text3dSegment::Image { .. } => style
+                                .as_attr(&styling)
+                                .metadata(idx)
+                                .family(Family::Name(&settings.placeholder_family)),
+                            _ => style.as_attr(&styling).metadata(idx),
+                        },
                     )
                 }),
             &Attrs::new()
@@ -212,6 +236,14 @@ pub fn text_render(
         let mut min_x = f32::MAX;
         let mut max_x = f32::MIN;
 
+        let mut image = Image::default_uninit();
+        let image = &mut image;
+
+        // Validated before so should always work.
+        if let Some(im) = images.get_mut(atlas.image.id()) {
+            mem::swap(image, im);
+        };
+
         for run in buffer.layout_runs() {
             width = width.max(run.line_w);
             height = height.max(run.line_top + run.line_height);
@@ -219,12 +251,12 @@ pub fn text_render(
             let mut strikethrough_run = LineRun::default();
             for glyph_index in 0..run.glyphs.len() {
                 let glyph = &run.glyphs[glyph_index];
-                let Some((_, attrs)) = text.segments.get(glyph.metadata) else {
+                let Some((seg, attrs)) = text.segments.get(glyph.metadata) else {
                     continue;
                 };
                 let dx = -run.line_w * styling.align.as_fac();
 
-                styling.fill_draw_requests(attrs, &mut draw_requests);
+                styling.fill_draw_requests(seg, attrs, &mut draw_requests);
 
                 let magic_number = attrs.magic_number.unwrap_or(0.);
 
@@ -269,12 +301,63 @@ pub fn text_render(
 
                             mesh.cache_rectangle(
                                 base,
+                                pixel_rect.size() / scale_factor,
                                 pixel_rect,
                                 color,
-                                scale_factor,
                                 layer,
                                 real_index,
                                 advance + dw,
+                                magic_number,
+                                category,
+                                &styling,
+                                &mut rng.0,
+                            );
+                        }
+
+                        DrawType::Image(id) => {
+                            let Some(emoji_image) = images.get(id) else {
+                                continue;
+                            };
+                            let Some(pixel_rect) = get_atlas_emoji(atlas, id, image, emoji_image)
+                            else {
+                                continue;
+                            };
+
+                            let Some(Some((Some(bb), units_per_em))) =
+                                font_system.db().with_face_data(glyph.font_id, |file, _| {
+                                    let Ok(face) = Face::parse(file, 0) else {
+                                        return None;
+                                    };
+                                    Some((
+                                        face.glyph_bounding_box(GlyphId(glyph.glyph_id)),
+                                        face.units_per_em(),
+                                    ))
+                                })
+                            else {
+                                continue;
+                            };
+
+                            let bx = bb.x_min as f32 / units_per_em as f32 * glyph.font_size;
+                            let by = bb.y_min as f32 / units_per_em as f32 * glyph.font_size;
+
+                            let w = bb.width() as f32 / units_per_em as f32 * glyph.font_size;
+                            let h = bb.height() as f32 / units_per_em as f32 * glyph.font_size;
+
+                            min_x = min_x.min(dx + glyph.x);
+                            max_x = max_x.max(dx + glyph.x + w);
+
+                            let base = Vec2::new(glyph.x + bx, glyph.y + by)
+                                + offset
+                                + Vec2::new(dx, -run.line_y);
+
+                            mesh.cache_rectangle(
+                                base,
+                                Vec2::new(w, h),
+                                pixel_rect,
+                                color,
+                                layer,
+                                real_index,
+                                advance + glyph.x,
                                 magic_number,
                                 category,
                                 &styling,
@@ -379,6 +462,11 @@ pub fn text_render(
         output.atlas_dimension = IVec2::new(image.width() as i32, image.height() as i32);
 
         mesh.pixel_to_uv(image);
+
+        if let Some(im) = images.get_mut(atlas.image.id()) {
+            mem::swap(image, im);
+        };
+        output.initialized = true;
     }
 }
 
@@ -394,7 +482,7 @@ fn get_atlas_rect(
 ) -> Option<(Rect, Vec2)> {
     atlas
         .glyphs
-        .get(&GlyphEntry {
+        .get(&GlyphEntry::Glyph {
             font: glyph.font_id,
             glyph_id: glyph.glyph_id.into(),
             real_size: FloatDecimal::new(glyph.font_size * scale_factor),
@@ -423,7 +511,46 @@ fn get_atlas_rect(
                 })
                 .flatten()
         })
-        .map(|(rect, offset)| (rect, offset / scale_factor))
+        .map(|(rect, offset)| (rect.as_rect(), offset / scale_factor))
+}
+
+fn get_atlas_emoji(
+    atlas: &mut TextAtlas,
+    id: AssetId<Image>,
+    atlas_image: &mut Image,
+    emoji_image: &Image,
+) -> Option<Rect> {
+    let entry = GlyphEntry::Image(id);
+    if let Some((rect, _)) = atlas.glyphs.get(&entry) {
+        return Some(rect.as_rect());
+    }
+    let rect = atlas.allocate(
+        atlas_image,
+        entry,
+        Vec2::ZERO,
+        emoji_image.width() as usize,
+        emoji_image.height() as usize,
+    );
+    let w_a = atlas_image.width() as usize * 4;
+    let w = emoji_image.width() as usize * 4;
+    let h = emoji_image.height() as usize;
+    let atlas_buf = atlas_image.data.as_mut()?;
+    let image_buf = emoji_image.data.as_ref()?;
+    let origin = rect.min.y as usize * w_a + rect.min.x as usize * 4;
+    // Should not happen normally but just here to avoid panics.
+    if atlas_buf.len() < origin + h * w_a {
+        return None;
+    }
+    if image_buf.len() < h * w {
+        return None;
+    }
+    for i in 0..h {
+        let r_i = h - i - 1;
+        // reversed to match the svg renderer's coordinate system.
+        atlas_buf[origin + i * w_a..origin + i * w_a + w]
+            .copy_from_slice(&image_buf[r_i * w..r_i * w + w]);
+    }
+    Some(rect.as_rect())
 }
 
 pub(crate) fn cache_glyph(
@@ -435,9 +562,9 @@ pub(crate) fn cache_glyph(
     stroke_join: StrokeJoin,
     weight: Weight,
     face: Face,
-) -> Option<(Rect, Vec2)> {
+) -> Option<(IRect, Vec2)> {
     let unit_per_em = face.units_per_em() as f32;
-    let entry = GlyphEntry {
+    let entry = GlyphEntry::Glyph {
         font: glyph.font_id,
         glyph_id: glyph.glyph_id.into(),
         real_size: FloatDecimal::new(glyph.font_size * scale_factor),

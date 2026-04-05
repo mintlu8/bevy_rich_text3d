@@ -13,8 +13,8 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    ParseError, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyling, TextAlign,
-    TextAnchor, TextAtlas, TextFetch,
+    ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyling,
+    TextAlign, TextAnchor, TextAtlas, TextFetch,
 };
 use rustc_hash::FxHashMap;
 use std::str::FromStr;
@@ -119,11 +119,11 @@ pub fn main() {
                     let stat = Stat::from_str(stat)?;
                     let unit = *name_to_unit.0.get(*name)
                         .ok_or(ParseError::Custom(format!("Unknown unit {name}.")))?;
-                    Ok(Text3dSegment::Extract(
+                    Ok((Text3dSegment::Extract(
                         commands.spawn(TextFetch::fetch_component::<StatMap>(unit, move |map| {
                             map.0.get(&stat).copied().unwrap_or_default().to_string()
                         })).id()
-                    ))
+                    ), SegmentStyle::default()))
                 } else {
                     Err(ParseError::Custom("".to_owned()))
                 }

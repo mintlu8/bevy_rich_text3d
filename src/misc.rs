@@ -90,6 +90,7 @@ pub struct Text3dDimensionOut {
     /// Returns `aabb`'s x and y derived from font's line height.
     pub dimension: Vec2,
     pub(crate) atlas_dimension: IVec2,
+    pub(crate) initialized: bool,
 }
 
 /// Allows italic or oblique faces to be selected.

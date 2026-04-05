@@ -129,9 +129,9 @@ impl<'t> ExtractedMesh<'t> {
     pub fn cache_rectangle(
         &mut self,
         base: Vec2,
+        dimension: Vec2,
         texture: Rect,
         color: Srgba,
-        scale_factor: f32,
         layer: Layer,
         real_index: usize,
         advance: f32,
@@ -142,7 +142,7 @@ impl<'t> ExtractedMesh<'t> {
     ) {
         let mesh_rect = Rect {
             min: base,
-            max: base + texture.size() / scale_factor,
+            max: base + dimension,
         };
         self.cache_rectangle2(
             mesh_rect,

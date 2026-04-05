@@ -1,7 +1,7 @@
 use crate::{styling::GlyphEntry, TextAtlas};
 use bevy::{
     image::Image,
-    math::{Rect, Vec2},
+    math::{IRect, Vec2},
 };
 use tiny_skia::{
     BlendMode, Color, ColorSpace, FillRule, LineCap, Paint, PathBuilder, PixmapMut,
@@ -56,7 +56,7 @@ impl PathEncoder {
         atlas: &mut TextAtlas,
         image: &mut Image,
         entry: GlyphEntry,
-    ) -> Option<(Rect, Vec2)> {
+    ) -> Option<(IRect, Vec2)> {
         let image_width = image.width();
         let image_height = image.height();
         let paint = Paint {
@@ -74,17 +74,21 @@ impl PathEncoder {
             let w = boundary.width().ceil() as usize;
             let h = boundary.height().ceil() as usize;
             let base = Vec2::new(boundary.left(), boundary.top());
-            let pixel_rect = atlas.cache(image, entry, base, w, h);
+            let pixel_rect = atlas.allocate(image, entry, base, w, h);
+            let line_join = match entry {
+                GlyphEntry::Glyph { join, .. } => join,
+                GlyphEntry::Image(_) => Default::default(),
+            };
             let stroke = Stroke {
                 // Different from the original zeno implementation.
                 width: stroke * 2.0,
                 miter_limit: 4.0,
                 line_cap: LineCap::Round,
-                line_join: entry.join.into(),
+                line_join: line_join.into(),
                 dash: None,
             };
-            let transform =
-                Transform::from_translate(pixel_rect.min.x - base.x, pixel_rect.min.y - base.y);
+            let v = pixel_rect.min.as_vec2() - base;
+            let transform = Transform::from_translate(v.x, v.y);
             let bytes = image.data.as_mut()?;
             let mut pixmap = PixmapMut::from_bytes(bytes, image_width, image_height)?;
             pixmap.stroke_path(&path, &paint, &stroke, transform, None);
@@ -93,9 +97,9 @@ impl PathEncoder {
             let w = boundary.width().ceil() as usize;
             let h = boundary.height().ceil() as usize;
             let base = Vec2::new(boundary.left(), boundary.top());
-            let pixel_rect = atlas.cache(image, entry, base, w, h);
-            let transform =
-                Transform::from_translate(pixel_rect.min.x - base.x, pixel_rect.min.y - base.y);
+            let pixel_rect = atlas.allocate(image, entry, base, w, h);
+            let v = pixel_rect.min.as_vec2() - base;
+            let transform = Transform::from_translate(v.x, v.y);
             let bytes = image.data.as_mut()?;
             let mut pixmap = PixmapMut::from_bytes(bytes, image_width, image_height)?;
             pixmap.fill_path(&path, &paint, FillRule::Winding, transform, None);

@@ -4,7 +4,8 @@ use bevy::{
     asset::{uuid::Uuid, Asset, Assets, Handle, RenderAssetUsages},
     ecs::component::Component,
     image::Image,
-    math::{IVec2, Rect, Vec2},
+    log::info,
+    math::{IRect, IVec2, Vec2},
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 use rustc_hash::FxHashMap;
@@ -21,7 +22,7 @@ use bevy::{ecs::reflect::ReflectComponent, reflect::Reflect};
 pub struct TextAtlas {
     pub(crate) image: Handle<Image>,
     #[cfg_attr(feature = "reflect", reflect(ignore))]
-    pub(crate) glyphs: FxHashMap<GlyphEntry, (Rect, Vec2)>,
+    pub(crate) glyphs: FxHashMap<GlyphEntry, (IRect, Vec2)>,
     pub(crate) pointer: IVec2,
     pub(crate) descent: usize,
 }
@@ -61,15 +62,15 @@ impl TextAtlas {
         )
     }
 
-    /// Cache a glyph.
-    pub fn cache(
+    /// Allocate space for a glyph, resizes if necessary but does not draw.
+    pub fn allocate(
         &mut self,
         image: &mut Image,
         glyph: GlyphEntry,
         base: Vec2,
         width: usize,
         height: usize,
-    ) -> Rect {
+    ) -> IRect {
         if let Some((rect, _)) = self.glyphs.get(&glyph) {
             return *rect;
         }
@@ -88,6 +89,7 @@ impl TextAtlas {
         }
         self.descent = self.descent.max(height);
         if self.pointer.y as usize + self.descent + PADDING >= image.height() as usize {
+            info!("Text atlas size expanded!");
             let old_dim = (image.width() * image.height()) as usize;
             image.resize(Extent3d {
                 width: image.width(),
@@ -102,9 +104,9 @@ impl TextAtlas {
         };
         let dimension = IVec2::new(width as i32, height as i32);
 
-        let output = Rect {
-            min: self.pointer.as_vec2(),
-            max: (self.pointer + dimension).as_vec2(),
+        let output = IRect {
+            min: self.pointer,
+            max: self.pointer + dimension,
         };
 
         self.glyphs.insert(glyph, (output, base));
