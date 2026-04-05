@@ -35,8 +35,6 @@ thiserror = "2.0.9"
 tiny-skia = { version = "0.12.0", default-features = false, features = ["std", "simd"]}
 ttf-parser = "0.25.1"
 write-fonts = { version = "0.46.0", features = ["read"] }
-png = "0.18.1"
-usvg = { version = "0.47.0", default-features = false }
 
 [profile.dev]
 opt-level = 3
