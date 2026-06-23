@@ -53,7 +53,7 @@ fn get_mesh<'t>(
             handle_3d.0 = handle;
         }
     }
-    meshes.get_mut(id)
+    meshes.get_mut(id).map(|x| x.into_inner())
 }
 
 mod private {
@@ -108,6 +108,8 @@ pub fn text_render(
         let Some(atlas) = atlases.get_mut(atlas.0.id()) else {
             continue;
         };
+
+        let atlas = atlas.into_inner();
 
         if atlas.image.id() == AssetId::default() || !images.contains(atlas.image.id()) {
             atlas.image = images.add(TextAtlas::empty_image(
@@ -240,8 +242,8 @@ pub fn text_render(
         let image = &mut image;
 
         // Validated before so should always work.
-        if let Some(im) = images.get_mut(atlas.image.id()) {
-            mem::swap(image, im);
+        if let Some(mut im) = images.get_mut(atlas.image.id()) {
+            mem::swap(image, &mut im);
         };
 
         for run in buffer.layout_runs() {
@@ -463,8 +465,8 @@ pub fn text_render(
 
         mesh.pixel_to_uv(image);
 
-        if let Some(im) = images.get_mut(atlas.image.id()) {
-            mem::swap(image, im);
+        if let Some(mut im) = images.get_mut(atlas.image.id()) {
+            mem::swap(image, &mut im);
         };
         output.initialized = true;
     }

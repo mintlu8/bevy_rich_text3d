@@ -7,11 +7,11 @@ use bevy::{
     camera::{Camera3d, PerspectiveProjection},
     color::{Color, Srgba},
     light::{DirectionalLight, GlobalAmbientLight},
+    material::AlphaMode,
     math::{Quat, Vec2, Vec3},
     mesh::{Mesh3d, Meshable},
     pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{Commands, Mesh, Plane3d, Projection, ResMut, Transform},
-    render::alpha::AlphaMode,
     DefaultPlugins,
 };
 use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyling, TextAtlas};

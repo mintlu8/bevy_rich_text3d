@@ -119,7 +119,7 @@ impl TextAtlas {
     pub fn clear(&mut self, images: &mut Assets<Image>) {
         self.pointer = IVec2::ZERO;
         self.glyphs.clear();
-        if let Some(img) = images.get_mut(self.image.id()) {
+        if let Some(mut img) = images.get_mut(self.image.id()) {
             for chunk in img.data.as_mut().unwrap().chunks_mut(4) {
                 chunk[0] = 255;
                 chunk[1] = 255;

@@ -18,7 +18,7 @@ use bevy::{
     prelude::{Commands, Res, ResMut, Transform},
     sprite::Text2d,
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
-    text::TextFont,
+    text::{FontSize, FontSource, TextFont},
     ui::{widget::Text, Node, UiRect, Val},
     DefaultPlugins,
 };
@@ -81,8 +81,8 @@ fn setup(
     commands.spawn((
         Text2d::new("T2d: An example sentence:"),
         TextFont {
-            font_size: SIZE,
-            font: server.load("Roboto-Regular.ttf"),
+            font_size: FontSize::Px(SIZE),
+            font: FontSource::Handle(server.load("Roboto-Regular.ttf")),
             ..Default::default()
         },
         Transform {
@@ -109,8 +109,8 @@ fn setup(
         },
         Text::new("UI: An example sentence:"),
         TextFont {
-            font_size: SIZE,
-            font: server.load("Roboto-Regular.ttf"),
+            font_size: FontSize::Px(SIZE),
+            font: FontSource::Handle(server.load("Roboto-Regular.ttf")),
             ..Default::default()
         },
     ));
@@ -134,11 +134,11 @@ pub fn update(
             }
 
             for (mut style, mut transform) in &mut t2d {
-                style.font_size = size;
+                style.font_size = FontSize::Px(size);
                 transform.translation.y = size * 2.;
             }
             for mut style in &mut ui {
-                style.font_size = size;
+                style.font_size = FontSize::Px(size);
             }
         }
     }
