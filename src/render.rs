@@ -183,12 +183,11 @@ pub fn text_render(
         } else {
             bounds.width
         };
-        buffer.set_wrap(font_system, Wrap::WordOrGlyph);
-        buffer.set_size(font_system, Some(width_limit), None);
-        buffer.set_tab_width(font_system, styling.tab_width);
+        buffer.set_wrap(Wrap::WordOrGlyph);
+        buffer.set_size(Some(width_limit), None);
+        buffer.set_tab_width(styling.tab_width);
 
         buffer.set_rich_text(
-            font_system,
             text.segments
                 .iter()
                 .enumerate()
