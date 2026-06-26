@@ -1,3 +1,7 @@
+#[cfg(feature = "3d")]
+use bevy::pbr::StandardMaterial;
+#[cfg(feature = "2d")]
+use bevy::sprite_render::ColorMaterial;
 use bevy::{
     asset::{AssetId, Assets, RenderAssetUsages},
     ecs::{
@@ -72,6 +76,8 @@ pub fn text_render(
     mut meshes: ResMut<Assets<Mesh>>,
     mut images: ResMut<Assets<Image>>,
     mut atlases: ResMut<Assets<TextAtlas>>,
+    #[cfg(feature = "3d")] mut standard_materials: ResMut<Assets<StandardMaterial>>,
+    #[cfg(feature = "2d")] mut color_materials: ResMut<Assets<ColorMaterial>>,
     mut text_query: Query<(
         Ref<Text3d>,
         Ref<Text3dBounds>,
@@ -96,9 +102,23 @@ pub fn text_render(
     // Add asynchronously drawn text.
     for (id, atlas, image) in lock.queue.drain(..) {
         let img_id = atlas.image.id();
+
+        let resized = images
+            .get(img_id)
+            .map(|old| old.width() != image.width() || old.height() != image.height())
+            .unwrap_or(false);
+
         let _ = images.insert(img_id, image);
         let _ = atlases.insert(id, atlas);
         redraw = true;
+
+        if resized {
+            // Force material bind groups to update
+            #[cfg(feature = "2d")]
+            for _mat in color_materials.iter_mut() {}
+            #[cfg(feature = "3d")]
+            for _mat in standard_materials.iter_mut() {}
+        }
     }
     let font_system = &mut lock.font_system;
     let scale_factor = settings.scale_factor;
@@ -183,12 +203,11 @@ pub fn text_render(
         } else {
             bounds.width
         };
-        buffer.set_wrap(font_system, Wrap::WordOrGlyph);
-        buffer.set_size(font_system, Some(width_limit), None);
-        buffer.set_tab_width(font_system, styling.tab_width);
+        buffer.set_wrap(Wrap::WordOrGlyph);
+        buffer.set_size(Some(width_limit), None);
+        buffer.set_tab_width(styling.tab_width);
 
         buffer.set_rich_text(
-            font_system,
             text.segments
                 .iter()
                 .enumerate()
