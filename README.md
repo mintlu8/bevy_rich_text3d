@@ -101,7 +101,7 @@ This is a band-aid solution intended to be removed later as we wait for a fix up
 * Some glyphs are displaying as `▮▮▮▮`
 
 This means the placeholder glyphs for emojis are getting prioritized. You should 
-either set the font family in `Text3dStyling` or set a default serif glyph in the plugin.
+either set the font family in `Text3dStyling` or set a default serif font in the plugin.
 
 ## Showcase
 
