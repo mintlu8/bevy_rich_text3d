@@ -98,7 +98,7 @@ Add them to the `LoadFonts` resource before the app starts.
 You must add `TouchTextMaterial*dPlugin` to get around a change detection issue in bevy.
 This is a band-aid solution intended to be removed later as we wait for a fix upstream.
 
-* Some glyphs are displaying as `▮▮▮▮` s
+* Some glyphs are displaying as `▮▮▮▮`
 
 This means the placeholder glyphs for emojis are getting prioritized. You should 
 either set the font family in `Text3dStyling` or set a default serif glyph in the plugin.
