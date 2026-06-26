@@ -70,7 +70,7 @@ pub fn main() {
                   timer: Res<Time<Virtual>>,
                   mut local: Local<f32>,
                   mut query: Query<(Entity, &mut Transform), With<Swirl>>| {
-                if counter.load(Ordering::Relaxed) >= 111 {
+                if counter.load(Ordering::Relaxed) >= 133 {
                     for (entity, _) in &query {
                         commands.entity(entity).despawn();
                     }
@@ -94,7 +94,7 @@ pub fn main() {
                     &settings,
                     [(
                         AssetId::default(),
-                        (16..128).map(|x| {
+                        (16..150).map(|x| {
                             (
                                 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
                                 DrawStyle {
