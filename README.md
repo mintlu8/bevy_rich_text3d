@@ -100,8 +100,13 @@ This is a band-aid solution intended to be removed later as we wait for a fix up
 
 * Some glyphs are displaying as `▮▮▮▮`
 
-This means the placeholder glyphs for emojis are getting prioritized. You should 
+This means the placeholder glyphs for emojis are getting prioritized. You should
 either set the font family in `Text3dStyling` or set a default serif font in the plugin.
+
+* How do I use this crate on wasm?
+
+The easiest way to use this crate is to embed your fonts into the binary via `include_bytes!`,
+then add them to `LoadFonts` via `font_embedded`.
 
 ## Showcase
 
