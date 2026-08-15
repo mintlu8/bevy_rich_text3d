@@ -13,8 +13,8 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyling,
-    TextAlign, TextAnchor, TextAtlas, TextFetch,
+    FetchTextPlugin, ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
+    Text3dSegment, Text3dStyling, TextAlign, TextAnchor, TextAtlas, TextFetch,
 };
 use rustc_hash::FxHashMap;
 use std::str::FromStr;
@@ -59,6 +59,7 @@ pub fn main() {
             load_system_fonts: true,
             ..Default::default()
         })
+        .add_plugins(FetchTextPlugin)
         .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
@@ -130,13 +131,11 @@ pub fn main() {
             };
             let text1 = Text3d::parse(
                 "**Samuel**\nStrength: {Samuel.strength}\nIntellect: {Samuel.intellect}\nAgility: {Samuel.agility}\nDefense: {Samuel.defense}\nStamina: {Samuel.stamina}", 
-                &mut parse,
-                |s| Err(ParseError::Custom(format!("Bad style {s}."))),
+                ParseBuilder::new().with_parse_value(&mut parse)
             ).unwrap();
             let text2 = Text3d::parse(
                 "**Catalina**\nStrength: {Catalina.strength}\nIntellect: {Catalina.intellect}\nAgility: {Catalina.agility}\nDefense: {Catalina.defense}\nStamina: {Catalina.stamina}", 
-                &mut parse,
-                |s| Err(ParseError::Custom(format!("Bad style {s}."))),
+                ParseBuilder::new().with_parse_value(&mut parse)
             ).unwrap();
             commands.spawn((
                 text1,

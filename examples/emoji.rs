@@ -25,8 +25,8 @@ use bevy_rectray::{
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
 };
 use bevy_rich_text3d::{
-    ParseError, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dSegment,
-    Text3dStyling, TextAtlas,
+    ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin,
+    Text3dSegment, Text3dStyling, TextAtlas,
 };
 
 pub fn main() {
@@ -138,9 +138,10 @@ fn setup(
     commands.spawn((
         ChildOf(layout),
         Transform2D::default(),
-        Text3d::parse("Spend 2 {spiral} to do 15 damage!", parse, |_| {
-            Err(ParseError::NotSupported(""))
-        })
+        Text3d::parse(
+            "Spend 2 {spiral} to do 15 damage!",
+            ParseBuilder::new().with_parse_value(parse),
+        )
         .unwrap(),
         Text3dStyling {
             size: 64.,
@@ -156,9 +157,10 @@ fn setup(
     commands.spawn((
         ChildOf(layout),
         Transform2D::default(),
-        Text3d::parse("thin {thin} wide {wide}", parse, |_| {
-            Err(ParseError::NotSupported(""))
-        })
+        Text3d::parse(
+            "thin {thin} wide {wide}",
+            ParseBuilder::new().with_parse_value(parse),
+        )
         .unwrap(),
         Text3dStyling {
             size: 64.,
@@ -174,10 +176,7 @@ fn setup(
     commands.spawn((
         ChildOf(layout),
         Transform2D::default(),
-        Text3d::parse("Smile {smile}", parse, |_| {
-            Err(ParseError::NotSupported(""))
-        })
-        .unwrap(),
+        Text3d::parse("Smile {smile}", ParseBuilder::new().with_parse_value(parse)).unwrap(),
         Text3dStyling {
             size: 64.,
             stroke: NonZero::new(10),
@@ -192,9 +191,10 @@ fn setup(
     commands.spawn((
         ChildOf(layout),
         Transform2D::default(),
-        Text3d::parse("Ultra {ultrawide} Wide!", parse, |_| {
-            Err(ParseError::NotSupported(""))
-        })
+        Text3d::parse(
+            "Ultra {ultrawide} Wide!",
+            ParseBuilder::new().with_parse_value(parse),
+        )
         .unwrap(),
         Text3dStyling {
             size: 64.,

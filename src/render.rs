@@ -14,7 +14,7 @@ use std::{mem, num::NonZero};
 use ttf_parser::{Face, GlyphId};
 
 use crate::{
-    fetch::FetchedTextSegment,
+    fetch::{FetchedCondition, FetchedTextSegment},
     layers::{DrawRequest, DrawType, Layer},
     line::LineRun,
     mesh_util::ExtractedMesh,
@@ -82,6 +82,7 @@ pub fn text_render(
         &mut Text3dDimensionOut,
     )>,
     segments: Query<Ref<FetchedTextSegment>>,
+    conditions: Query<Ref<FetchedCondition>>,
     mut draw_requests: Local<Vec<DrawRequest>>,
     mut sort_buffer: Local<Vec<(Layer, [u16; 6])>>,
     mut rng: Local<private::TextRng>,
@@ -146,6 +147,12 @@ pub fn text_render(
                         break;
                     }
                 }
+                if let Text3dSegment::SkipIf { condition, .. } = &segment.0 {
+                    if conditions.get(*condition).is_ok_and(|x| x.is_changed()) {
+                        unchanged = false;
+                        break;
+                    }
+                }
             }
             if unchanged {
                 let Some(image) = images.get(atlas.image.id()) else {
@@ -187,13 +194,18 @@ pub fn text_render(
         buffer.set_size(font_system, Some(width_limit), None);
         buffer.set_tab_width(font_system, styling.tab_width);
 
+        let mut to_skip = 0;
         buffer.set_rich_text(
             font_system,
             text.segments
                 .iter()
                 .enumerate()
-                .map(|(idx, (text, style))| {
-                    (
+                .filter_map(|(idx, (text, style))| {
+                    if to_skip > 0 {
+                        to_skip -= 1;
+                        return None;
+                    }
+                    Some((
                         match text {
                             Text3dSegment::String(s) => s.as_str(),
                             Text3dSegment::Extract(e) => segments
@@ -203,6 +215,18 @@ pub fn text_render(
                             Text3dSegment::Image { image: _, width } => {
                                 settings.get_placeholder_glyph(*width)
                             }
+                            Text3dSegment::SkipIf {
+                                condition,
+                                skip_if,
+                                offset: step,
+                            } => {
+                                if let Ok(condition) = conditions.get(*condition) {
+                                    if condition.0 == *skip_if {
+                                        to_skip = *step;
+                                    }
+                                }
+                                return None;
+                            }
                         },
                         match text {
                             Text3dSegment::Image { .. } => style
@@ -211,7 +235,7 @@ pub fn text_render(
                                 .family(Family::Name(&settings.placeholder_family)),
                             _ => style.as_attr(&styling).metadata(idx),
                         },
-                    )
+                    ))
                 }),
             &Attrs::new()
                 .family(Family::Name(&styling.font))

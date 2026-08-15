@@ -8,12 +8,14 @@ mod color_table;
 mod emoji;
 mod export;
 mod fetch;
+mod fetcher;
 mod layers;
 mod line;
 mod loading;
 mod mesh_util;
 mod misc;
 mod parse;
+mod parse_util;
 mod prepare;
 mod render;
 mod styling;
@@ -47,10 +49,11 @@ pub use change_detection::TouchTextMaterial2dPlugin;
 #[cfg(feature = "3d")]
 pub use change_detection::TouchTextMaterial3dPlugin;
 pub use export::{GlyphMeta, MeshExport, MeshExportEntry};
-pub use fetch::{FetchedTextSegment, SharedTextSegment, TextFetch};
+pub use fetch::{FetchedCondition, FetchedTextSegment, SharedTextSegment};
+pub use fetcher::TextFetch;
 use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
 pub use misc::*;
-pub use parse::ParseError;
+pub use parse_util::{ParseBuilder, ParseError};
 pub use styling::{SegmentSize, SegmentStyle, Text3dStyling};
 pub use text3d::{Text3d, Text3dSegment};
 
@@ -249,11 +252,8 @@ impl Plugin for Text3dPlugin {
         );
         app.add_systems(
             PostUpdate,
-            (
-                fetch::text_fetch_system,
-                render::text_render.run_if(resource_exists::<TextRenderer>),
-            )
-                .chain()
+            render::text_render
+                .run_if(resource_exists::<TextRenderer>)
                 .in_set(Text3dSet)
                 .before(TouchMaterialSet),
         );
@@ -285,5 +285,25 @@ impl Plugin for Text3dPlugin {
         } else {
             app.insert_resource(self.load_fonts_blocking(fonts));
         }
+    }
+}
+
+/// Enables the [`TextFetch`] component.
+///
+/// This was in [`Text3dPlugin`] in early versions.
+#[derive(Debug, Clone)]
+pub struct FetchTextPlugin;
+
+impl Plugin for FetchTextPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            PostUpdate,
+            fetcher::text_fetch_system
+                .in_set(Text3dSet)
+                .before(render::text_render),
+        );
+
+        #[cfg(feature = "reflect")]
+        app.register_type::<TextFetch>();
     }
 }

@@ -49,6 +49,11 @@ pub enum Text3dSegment {
         /// Represents width / em, usually `1.0` for squares.
         width: f32,
     },
+    SkipIf {
+        condition: Entity,
+        skip_if: bool,
+        offset: usize,
+    },
 }
 
 fn text_3d_on_remove(mut world: DeferredWorld, cx: HookContext) {
@@ -65,6 +70,7 @@ fn text_3d_on_remove(mut world: DeferredWorld, cx: HookContext) {
             Text3dSegment::String(_) => None,
             Text3dSegment::Image { .. } => None,
             Text3dSegment::Extract(entity) => Some(*entity),
+            Text3dSegment::SkipIf { condition, .. } => Some(*condition),
         })
         .collect();
     let mut commands = world.commands();

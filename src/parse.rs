@@ -3,51 +3,19 @@ use std::{iter::repeat_n, num::NonZeroU32, str::FromStr};
 use crate::{
     color_table::parse_color,
     misc::{Style, Weight},
+    parse_util::{
+        ConditionOutput, Flip, ParseBuilder, ParseConditionFn, ParseError, ParseStyleFn,
+        ParseValueFn,
+    },
     SegmentSize, SegmentStyle, Text3d, Text3dSegment,
 };
-
-trait Flip {
-    fn flip(&mut self);
-}
-
-impl Flip for Option<Weight> {
-    fn flip(&mut self) {
-        *self = match *self {
-            Some(w) if w <= Weight::NORMAL => Some(Weight::BOLD),
-            None => Some(Weight::BOLD),
-            _ => Some(Weight::NORMAL),
-        }
-    }
-}
-
-impl Flip for Option<Style> {
-    fn flip(&mut self) {
-        *self = match *self {
-            Some(Style::Normal) | None => Some(Style::Italic),
-            _ => Some(Style::Italic),
-        }
-    }
-}
-
-impl Flip for Option<bool> {
-    fn flip(&mut self) {
-        *self = match *self {
-            Some(false) | None => Some(true),
-            Some(true) => Some(false),
-        }
-    }
-}
 
 impl Text3d {
     /// Call [`Text3d::parse`] with no custom parsing functions.
     ///
     /// Only standard styles are supported, see [`Text3d::parse`] for details.
     pub fn parse_raw(text: &str) -> Result<Self, ParseError> {
-        Text3d::parse(
-            text,
-            |command| Err(ParseError::BadCommand(command.into())),
-            |style| Err(ParseError::MissingStyle(style.into())),
-        )
+        Text3d::parse(text, ParseBuilder::new())
     }
 
     /// Parse rich text string.
@@ -99,6 +67,16 @@ impl Text3d {
     /// The result should either be a string fetched from the world
     /// or an [`Entity`](bevy::ecs::entity::Entity) with a [`FetchedTextSegment`](crate::FetchedTextSegment) component.
     ///
+    /// ## Conditions
+    ///
+    /// ```md
+    /// { ?condition : value }
+    /// { ?!condition : value }        // flips the condition
+    /// ```
+    ///
+    /// Displays value only when `condition` is true (or false with `?!`).
+    /// The result should either be a boolean value fetched from the world
+    /// or an [`Entity`](bevy::ecs::entity::Entity) with a [`FetchedCondition`](crate::FetchedCondition) component.
     ///
     /// ## Markdown
     ///
@@ -119,26 +97,43 @@ impl Text3d {
     /// We trim whitespaces before passing arguments to these functions.
     pub fn parse(
         text: &str,
-        mut fetch_string: impl FnMut(&str) -> Result<(Text3dSegment, SegmentStyle), ParseError>,
-        mut stylesheet: impl FnMut(&str) -> Result<SegmentStyle, ParseError>,
+        mut parser: ParseBuilder<impl ParseStyleFn, impl ParseValueFn, impl ParseConditionFn>,
     ) -> Result<Self, ParseError> {
         #[derive(Debug, Clone, Copy)]
         enum ParseState {
             Text,
             Command,
-            Image,
+            Conditional(bool),
         }
 
         let mut buffer = String::new();
         let mut state = ParseState::Text;
         let mut segments = Vec::new();
-        let mut styles = vec![SegmentStyle::default()];
+        let mut stack: Vec<(SegmentStyle, Option<usize>)> = vec![(SegmentStyle::default(), None)];
+
+        macro_rules! push_seg {
+            () => {
+                if !buffer.is_empty() {
+                    segments.push((
+                        Text3dSegment::String(core::mem::take(&mut buffer)),
+                        style!(),
+                    ));
+                }
+            };
+        }
         macro_rules! style {
             () => {
-                styles.last().ok_or(ParseError::BracketMismatch)?
+                stack
+                    .last()
+                    .map(|x| &x.0)
+                    .ok_or(ParseError::BracketMismatch)?
+                    .clone()
             };
             (mut) => {
-                styles.last_mut().ok_or(ParseError::BracketMismatch)?
+                stack
+                    .last_mut()
+                    .map(|x| &mut x.0)
+                    .ok_or(ParseError::BracketMismatch)?
             };
         }
         use ParseState::*;
@@ -146,43 +141,77 @@ impl Text3d {
         while let Some(c) = iter.next() {
             match (c, state) {
                 ('{', Text) => {
-                    push_segment(&buffer, &mut segments, &mut styles)?;
-                    buffer.clear();
+                    push_seg!();
                     state = Command;
                 }
-                (':', Command) => match buffer.trim().split(",").collect::<Vec<_>>().as_slice() {
-                    ["image"] => {
-                        buffer.clear();
-                        state = Image;
+                (' ', Command) if buffer.is_empty() => {}
+                ('?', Command) if buffer.is_empty() => {
+                    state = Conditional(true);
+                }
+                ('!', Conditional(true)) if buffer.is_empty() => {
+                    state = Conditional(false);
+                }
+                (':', Command) => {
+                    let mut style = style!();
+                    for s in buffer.trim().split(",") {
+                        style = style.join(parse_style(s.trim(), &mut parser.parse_style)?)
                     }
-                    style_slice => {
-                        let mut style = style!().clone();
-                        for s in style_slice {
-                            style = style.join(parse_style(s.trim(), &mut stylesheet)?)
-                        }
-                        styles.push(style);
-                        buffer.clear();
-                        state = Text;
-                    }
-                },
-                ('}', Text) => {
-                    push_segment(&buffer, &mut segments, &mut styles)?;
+                    stack.push((style, None));
                     buffer.clear();
-                    let _ = styles.pop();
+                    state = Text;
+                }
+                (':', Conditional(should_be)) => {
+                    match parser.parse_condition.call(buffer.trim())? {
+                        ConditionOutput::Constant(b) if b == should_be => {
+                            // start a scope and do nothing
+                            stack.push((style!(), None));
+                        }
+                        ConditionOutput::Constant(_) => {
+                            // skip all wrapped items.
+                            let mut depth = 1;
+                            while depth > 0 {
+                                match iter.next() {
+                                    Some('{') => depth += 1,
+                                    Some('}') => depth -= 1,
+                                    _ => (),
+                                }
+                            }
+                        }
+                        ConditionOutput::Dynamic(entity) => {
+                            let pos = segments.len();
+                            segments.push((
+                                Text3dSegment::SkipIf {
+                                    condition: entity,
+                                    skip_if: should_be,
+                                    offset: 0,
+                                },
+                                style!(),
+                            ));
+                            stack.push((style!(), Some(pos)));
+                        }
+                    }
+                    buffer.clear();
+                    state = Text;
+                }
+                ('}', Text) => {
+                    push_seg!();
+                    if let Some((_, Some(r))) = stack.pop() {
+                        let l = segments.len() - r;
+                        if let Text3dSegment::SkipIf { offset, .. } = &mut segments[r].0 {
+                            *offset = l;
+                        }
+                    };
                 }
                 ('}', Command) => {
-                    let (segment, style) = fetch_string(buffer.trim())?;
-                    let style = style!().clone().join(style);
+                    let (segment, style) = parser.parse_value.call(buffer.trim())?;
+                    let style = style!().join(style);
                     segments.push((segment, style));
                     buffer.clear();
                     state = Text;
                 }
-                ('}', Image) => {
-                    return Err(ParseError::NotSupported("image"));
-                }
+                ('}', Conditional(_)) => {} // do nothing, failing is too harsh.
                 ('*', Text) => {
-                    push_segment(&buffer, &mut segments, &mut styles)?;
-                    buffer.clear();
+                    push_seg!();
                     let mut stars = 1;
                     while let Some(c) = iter.peek() {
                         if *c == '*' {
@@ -204,18 +233,16 @@ impl Text3d {
                     }
                 }
                 ('_', Text) if iter.peek() == Some(&'_') => {
-                    push_segment(&buffer, &mut segments, &mut styles)?;
-                    buffer.clear();
+                    push_seg!();
                     iter.next();
                     style!(mut).underline.flip()
                 }
                 ('~', Text) if iter.peek() == Some(&'~') => {
-                    push_segment(&buffer, &mut segments, &mut styles)?;
-                    buffer.clear();
+                    push_seg!();
                     iter.next();
                     style!(mut).strikethrough.flip()
                 }
-                (c, Command | Image) => buffer.push(c),
+                (c, Command | Conditional(_)) => buffer.push(c),
                 ('\\', Text) => {
                     if let Some(c) = iter.peek() {
                         buffer.push(*c);
@@ -244,14 +271,14 @@ impl Text3d {
                 }
             }
         }
-        push_segment(&buffer, &mut segments, &mut styles)?;
+        push_seg!();
         Ok(Text3d { segments })
     }
 }
 
 fn parse_style(
     style: &str,
-    mut stylesheet: impl FnMut(&str) -> Result<SegmentStyle, ParseError>,
+    stylesheet: &mut impl ParseStyleFn,
 ) -> Result<SegmentStyle, ParseError> {
     if let Some(number) = style.strip_prefix("v-") {
         if let Ok(magic_number) = f32::from_str(number) {
@@ -260,7 +287,7 @@ fn parse_style(
                 ..Default::default()
             })
         } else {
-            stylesheet(style)
+            stylesheet.call(style)
         }
     } else if let Some(name) = style.strip_prefix("s-") {
         if let Ok(int) = u32::from_str(name) {
@@ -274,7 +301,7 @@ fn parse_style(
                 ..Default::default()
             })
         } else {
-            stylesheet(style)
+            stylesheet.call(style)
         }
     } else if let Some(name) = style.strip_prefix("f-") {
         Ok(SegmentStyle {
@@ -288,7 +315,7 @@ fn parse_style(
                 ..Default::default()
             })
         } else {
-            stylesheet(style)
+            stylesheet.call(style)
         }
     } else if let Some(name) = style.strip_prefix("*") {
         if let Ok(size) = name.parse::<f32>() {
@@ -297,7 +324,7 @@ fn parse_style(
                 ..Default::default()
             })
         } else {
-            stylesheet(style)
+            stylesheet.call(style)
         }
     } else if let Some(color) = parse_color(style) {
         Ok(SegmentStyle {
@@ -338,36 +365,7 @@ fn parse_style(
                 size: Some(SegmentSize::Multiply(1.25)),
                 ..Default::default()
             }),
-            _ => stylesheet(style),
+            _ => stylesheet.call(style),
         }
     }
-}
-
-fn push_segment(
-    buffer: &str,
-    spans: &mut Vec<(Text3dSegment, SegmentStyle)>,
-    styles: &mut [SegmentStyle],
-) -> Result<(), ParseError> {
-    if !buffer.is_empty() {
-        spans.push((
-            Text3dSegment::String(buffer.into()),
-            styles.last().ok_or(ParseError::BracketMismatch)?.clone(),
-        ));
-    }
-    Ok(())
-}
-
-/// Error emitted when parsing rich text.
-#[derive(Debug, thiserror::Error)]
-pub enum ParseError {
-    #[error("Feature {0} is not supported.")]
-    NotSupported(&'static str),
-    #[error("Bracket mismatch.")]
-    BracketMismatch,
-    #[error("Bad command: {0}")]
-    BadCommand(String),
-    #[error("Style {0} missing.")]
-    MissingStyle(String),
-    #[error("{0}")]
-    Custom(String),
 }

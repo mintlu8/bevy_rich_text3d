@@ -13,7 +13,7 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    FetchedTextSegment, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
+    FetchedTextSegment, ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
     Text3dSegment, Text3dStyling, TextAlign, TextAtlas,
 };
 
@@ -47,16 +47,16 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<StandardM
     });
     let text = Text3d::parse(
             "{s-20, s-black:<Time Bomb>}: Deals {orange:**explosion**} damage equal to {red:*fps*}, which is {s-20, s-black, red:{fps}}! __BOOM!__", 
-            |s| {
-                if s == "fps" {
-                    Ok((Text3dSegment::Extract(
-                        commands.spawn((FetchedTextSegment::EMPTY, FetchFPS)).id()
-                    ), SegmentStyle::default()))
-                } else {
-                    Err(ParseError::Custom(format!("Bad value {s}.")))
-                }
-            },
-            |s| Err(ParseError::Custom(format!("Bad style {s}."))),
+            ParseBuilder::new()
+                .with_parse_value(|s| {
+                    if s == "fps" {
+                        Ok((Text3dSegment::Extract(
+                            commands.spawn((FetchedTextSegment::EMPTY, FetchFPS)).id()
+                        ), SegmentStyle::default()))
+                    } else {
+                        Err(ParseError::Custom(format!("Bad value {s}.")))
+                    }
+                }),
         ).unwrap();
     commands.spawn((
         text,
