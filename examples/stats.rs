@@ -2,6 +2,8 @@ use bevy::{
     app::{App, PostStartup, Startup, Update},
     asset::Assets,
     color::{Color, Srgba},
+    ecs::query::With,
+    input::{keyboard::KeyCode, ButtonInput},
     light::GlobalAmbientLight,
     math::Vec3,
     pbr::{MeshMaterial3d, StandardMaterial},
@@ -13,8 +15,9 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    FetchTextPlugin, ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
-    Text3dSegment, Text3dStyling, TextAlign, TextAnchor, TextAtlas, TextFetch,
+    ConditionOutput, FetchTextPlugin, FetchedCondition, ParseBuilder, ParseError, SegmentStyle,
+    SharedTextSegment, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyling, TextAlign,
+    TextAnchor, TextAtlas, TextFetch,
 };
 use rustc_hash::FxHashMap;
 use std::str::FromStr;
@@ -104,8 +107,12 @@ pub fn main() {
             ));
         },
     );
+    let shift_pressed = app
+        .world_mut()
+        .spawn((SharedTextSegment, ShiftPressed, FetchedCondition(false)))
+        .id();
 
-    app.add_systems(PostStartup, |mut commands: Commands, name_to_unit: Res<NameToUnit>, mut standard_materials: ResMut<Assets<StandardMaterial>>| {
+    app.add_systems(PostStartup, move |mut commands: Commands, name_to_unit: Res<NameToUnit>, mut standard_materials: ResMut<Assets<StandardMaterial>>| {
             let mat = standard_materials.add(
                 StandardMaterial {
                     base_color_texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
@@ -117,25 +124,45 @@ pub fn main() {
             let mut parse = |s: &str| {
                 let vec: Vec<_> = s.split('.').collect();
                 if let [name, stat] = vec.as_slice() {
+                    let (stat, add) = match stat.split_once('+') {
+                        Some((stat, plus)) => (stat, plus.parse::<i32>().unwrap_or(0)),
+                        None => (*stat, 0),
+                    };
+
                     let stat = Stat::from_str(stat)?;
                     let unit = *name_to_unit.0.get(*name)
                         .ok_or(ParseError::Custom(format!("Unknown unit {name}.")))?;
                     Ok((Text3dSegment::Extract(
                         commands.spawn(TextFetch::fetch_component::<StatMap>(unit, move |map| {
-                            map.0.get(&stat).copied().unwrap_or_default().to_string()
+                            (map.0.get(&stat).copied().unwrap_or_default() + add).to_string()
                         })).id()
                     ), SegmentStyle::default()))
                 } else {
                     Err(ParseError::Custom("".to_owned()))
                 }
             };
+            let parse_condition = |s: &str| {
+                if s == "shift" {
+                    Ok(ConditionOutput::Dynamic(shift_pressed))
+                } else {
+                    Err(ParseError::Custom("".to_owned()))
+                }
+            };
             let text1 = Text3d::parse(
                 "**Samuel**\nStrength: {Samuel.strength}\nIntellect: {Samuel.intellect}\nAgility: {Samuel.agility}\nDefense: {Samuel.defense}\nStamina: {Samuel.stamina}", 
-                ParseBuilder::new().with_parse_value(&mut parse)
+                ParseBuilder::new().with_parse_value(&mut parse).with_parse_condition(parse_condition)
             ).unwrap();
             let text2 = Text3d::parse(
                 "**Catalina**\nStrength: {Catalina.strength}\nIntellect: {Catalina.intellect}\nAgility: {Catalina.agility}\nDefense: {Catalina.defense}\nStamina: {Catalina.stamina}", 
-                ParseBuilder::new().with_parse_value(&mut parse)
+                ParseBuilder::new().with_parse_value(&mut parse).with_parse_condition(parse_condition)
+            ).unwrap();
+            let text3 = Text3d::parse(
+                "Samuel's Sundering Blade:\n Deals {?shift:strength({Samuel.strength}) + 4}{?!shift:{Samuel.strength+4}} damage.", 
+                ParseBuilder::new().with_parse_value(&mut parse).with_parse_condition(parse_condition)
+            ).unwrap();
+            let text4 = Text3d::parse(
+                "Catalina's Fire Bolt:\n Deals {?shift:intellect({Catalina.intellect}) + 12}{?!shift:{Catalina.intellect+12}} damage.", 
+                ParseBuilder::new().with_parse_value(&mut parse).with_parse_condition(parse_condition)
             ).unwrap();
             commands.spawn((
                 text1,
@@ -170,6 +197,38 @@ pub fn main() {
             ));
 
             commands.spawn((
+                text3,
+                Text3dStyling {
+                    size: 32.,
+                    color: Srgba::new(0., 1., 1., 1.),
+                    align: TextAlign::Center,
+                    ..Default::default()
+                },
+                Text3dBounds {
+                    width: 600.,
+                },
+                Mesh3d::default(),
+                MeshMaterial3d(mat.clone()),
+                Transform::from_translation(Vec3::new(0.0, -200.0, 0.0))
+            ));
+
+            commands.spawn((
+                text4,
+                Text3dStyling {
+                    size: 32.,
+                    color: Srgba::new(1., 0., 0., 1.),
+                    align: TextAlign::Center,
+                    ..Default::default()
+                },
+                Text3dBounds {
+                    width: 600.,
+                },
+                Mesh3d::default(),
+                MeshMaterial3d(mat.clone()),
+                Transform::from_translation(Vec3::new(0.0, -300.0, 0.0))
+            ));
+
+            commands.spawn((
                 Camera3d::default(),
                 Projection::Orthographic(OrthographicProjection::default_3d()),
                 Transform::from_translation(Vec3::new(0., 0., 1.))
@@ -177,6 +236,7 @@ pub fn main() {
             ));
         });
     app.add_systems(Update, randomize_stats);
+    app.add_systems(Update, check_shift);
     app.run();
 }
 
@@ -194,6 +254,28 @@ fn randomize_stats(
                 .0
                 .iter_mut()
                 .for_each(|(_, v)| *v = fastrand::i32(0..10));
+        }
+    }
+}
+
+#[derive(Debug, Component)]
+struct ShiftPressed;
+
+fn check_shift(
+    presses: ResMut<ButtonInput<KeyCode>>,
+    query: Query<&mut FetchedCondition, With<ShiftPressed>>,
+) {
+    if presses.pressed(KeyCode::ShiftLeft) {
+        for mut item in query {
+            if !item.0 {
+                item.0 = true;
+            }
+        }
+    } else {
+        for mut item in query {
+            if item.0 {
+                item.0 = false;
+            }
         }
     }
 }

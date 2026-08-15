@@ -53,7 +53,7 @@ impl Text3d {
     /// * `s-red` Parses color names as stroke color.
     /// * `v-4.0` Sets the `magic_number` field.
     /// * `f-Roboto` Sets the font to Roboto.
-    /// * `#18` Sets font size to `18`.
+    /// * `$18` Sets font size to `18`.
     /// * `*1.5` Sets font size to `1.5` times the original.
     /// * `h1` - `h4` Sets font size to `2`, `1.75`, `1.5`, `1.25` times the original.
     ///
@@ -182,7 +182,7 @@ impl Text3d {
                             segments.push((
                                 Text3dSegment::SkipIf {
                                     condition: entity,
-                                    skip_if: should_be,
+                                    skip_if: !should_be,
                                     offset: 0,
                                 },
                                 style!(),
@@ -196,7 +196,7 @@ impl Text3d {
                 ('}', Text) => {
                     push_seg!();
                     if let Some((_, Some(r))) = stack.pop() {
-                        let l = segments.len() - r;
+                        let l = segments.len().saturating_sub(1 + r);
                         if let Text3dSegment::SkipIf { offset, .. } = &mut segments[r].0 {
                             *offset = l;
                         }
@@ -308,7 +308,7 @@ fn parse_style(
             font: Some(name.into()),
             ..Default::default()
         })
-    } else if let Some(name) = style.strip_prefix("#") {
+    } else if let Some(name) = style.strip_prefix("$") {
         if let Ok(size) = name.parse::<f32>() {
             Ok(SegmentStyle {
                 size: Some(SegmentSize::Flat(size)),

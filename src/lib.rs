@@ -53,7 +53,7 @@ pub use fetch::{FetchedCondition, FetchedTextSegment, SharedTextSegment};
 pub use fetcher::TextFetch;
 use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
 pub use misc::*;
-pub use parse_util::{ParseBuilder, ParseError};
+pub use parse_util::{ConditionOutput, ParseBuilder, ParseError};
 pub use styling::{SegmentSize, SegmentStyle, Text3dStyling};
 pub use text3d::{Text3d, Text3dSegment};
 

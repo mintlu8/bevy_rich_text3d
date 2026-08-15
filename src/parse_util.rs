@@ -49,12 +49,16 @@ pub enum ParseError {
     Custom(String),
 }
 
+/// Output for parsing condition.
+///
+/// Constant may skip a portion of the text entirely while dynamic checks [`FetchedCondition`](crate::FetchedCondition) at runtime.
 #[derive(Debug, Clone, Copy)]
 pub enum ConditionOutput {
     Constant(bool),
     Dynamic(Entity),
 }
 
+/// Placeholder default value.
 pub struct DefaultFn;
 
 pub trait ParseStyleFn {
@@ -105,6 +109,7 @@ impl<T: FnMut(&str) -> Result<ConditionOutput, ParseError>> ParseConditionFn for
     }
 }
 
+/// Builder pattern input for parsing rich text.
 pub struct ParseBuilder<
     Style: ParseStyleFn = DefaultFn,
     Value: ParseValueFn = DefaultFn,

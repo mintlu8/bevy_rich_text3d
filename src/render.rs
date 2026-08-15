@@ -218,11 +218,11 @@ pub fn text_render(
                             Text3dSegment::SkipIf {
                                 condition,
                                 skip_if,
-                                offset: step,
+                                offset,
                             } => {
                                 if let Ok(condition) = conditions.get(*condition) {
                                     if condition.0 == *skip_if {
-                                        to_skip = *step;
+                                        to_skip = *offset;
                                     }
                                 }
                                 return None;
