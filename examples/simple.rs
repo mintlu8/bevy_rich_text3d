@@ -14,7 +14,7 @@ use bevy::{
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     DefaultPlugins,
 };
-use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
+use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyling, TextAlign, TextAnchor, TextAtlas};
 
 pub fn main() {
     App::new()
@@ -72,16 +72,18 @@ fn setup(
 
     commands.spawn((
         Text3d::new(
-            "This application is powered by bevy, cosmic_text, tiny_skia and bevy_rich_text3d!",
+            "This application is powered by bevy,\ncosmic_text, tiny_skia and bevy_rich_text3d!",
         ),
         Text3dStyling {
             font: "monospace".into(),
             color: Srgba::new(0., 1., 1., 1.),
+            align: TextAlign::Right,
+            anchor: TextAnchor::CENTER_LEFT,
             ..Default::default()
         },
         Mesh2d::default(),
         MeshMaterial2d(mat.clone()),
-        Transform::from_translation(Vec3::new(50., -100., 0.)),
+        Transform::from_translation(Vec3::new(0., -100., 0.)),
     ));
 
     commands.spawn((

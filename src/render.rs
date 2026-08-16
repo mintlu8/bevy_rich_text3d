@@ -458,7 +458,7 @@ pub fn text_render(
 
         let dimension = Vec2::new(width, height);
         let center = Vec2::new(width * (0.5 - styling.align.as_fac()), -height / 2.);
-        let offset = *styling.anchor * dimension - center;
+        let offset = -*styling.anchor * dimension - center;
         let bb_min = Vec2::new(width * -styling.align.as_fac(), -height);
 
         mesh.post_process(bb_min, dimension);
