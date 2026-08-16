@@ -10,6 +10,15 @@ use crate::{
     SegmentSize, SegmentStyle, Text3d, Text3dSegment,
 };
 
+fn trim_mut(s: &mut String) {
+    let trimmed = s.trim();
+    let start = trimmed.as_ptr() as usize - s.as_ptr() as usize;
+    let end = start + trimmed.len();
+
+    s.truncate(end);
+    s.drain(..start);
+}
+
 impl Text3d {
     /// Call [`Text3d::parse`] with no custom parsing functions.
     ///
@@ -36,6 +45,13 @@ impl Text3d {
     ///
     /// This is equivalent to `<style>value</style>` in html.
     /// The left hand side is the name of the style, it will be passed to the `stylesheet` function.
+    ///
+    /// `value` will be trimmed of whitespace, so the correct syntax is to add whitespace outside of the braces:
+    ///
+    /// ```md
+    /// Hello {style:World}! // Hello World!
+    /// Hello{style: World}! // HelloWorld!
+    /// ```
     ///
     /// Style commands also can be chained:
     ///
@@ -86,6 +102,10 @@ impl Text3d {
     /// * `__underline__`
     /// * `~~strikethrough~~`
     /// * `\*` escape character
+    ///
+    /// ## Whitespace Rule
+    ///
+    /// Consecutive whitespaces are rendered either as one whitespace or multiple linebreaks.
     ///
     /// ## Inputs
     ///
@@ -194,6 +214,7 @@ impl Text3d {
                     state = Text;
                 }
                 ('}', Text) => {
+                    trim_mut(&mut buffer);
                     push_seg!();
                     if let Some((_, Some(r))) = stack.pop() {
                         let l = segments.len().saturating_sub(1 + r);

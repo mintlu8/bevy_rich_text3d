@@ -63,8 +63,8 @@ impl<'t> ExtractedMesh<'t> {
         let positions = recycle_mesh!(mesh, ATTRIBUTE_POSITION, Float32x3);
         let normals = recycle_mesh!(mesh, ATTRIBUTE_NORMAL, Float32x3);
         let uv0 = recycle_mesh!(mesh, ATTRIBUTE_UV_0, Float32x2);
-        let exports = style.export.init_cache(mesh);
         let colors = recycle_mesh!(mesh, ATTRIBUTE_COLOR, Float32x4);
+        let exports = style.export.init_cache(mesh);
 
         let mut indices = if let Some(Indices::U16(indices)) = mesh.remove_indices() {
             indices
@@ -96,19 +96,21 @@ impl<'t> ExtractedMesh<'t> {
     }
 
     pub fn post_process(&mut self, min: Vec2, dimension: Vec2) {
+        let w = dimension.x.max(0.0001);
+        let h = dimension.y.max(0.0001);
         for item in &mut self.exports {
             for (idx, meta_type) in item.entry.iter() {
                 match meta_type {
                     GlyphMeta::UvX => {
                         item.data
                             .for_each_zipped_mut(&self.positions, |arr, position| {
-                                arr[idx] = (position[0] - min.x) / dimension.x;
+                                arr[idx] = (position[0] - min.x) / w;
                             })
                     }
                     GlyphMeta::UvY => {
                         item.data
                             .for_each_zipped_mut(&self.positions, |arr, position| {
-                                arr[idx] = (position[1] - min.y) / dimension.y;
+                                arr[idx] = (position[1] - min.y) / h;
                             })
                     }
                     _ => (),

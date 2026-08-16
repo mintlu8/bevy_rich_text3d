@@ -259,9 +259,6 @@ pub fn text_render(
 
         let mut height = 0.0f32;
 
-        let mut min_x = f32::MAX;
-        let mut max_x = f32::MIN;
-
         let mut image = Image::default_uninit();
         let image = &mut image;
 
@@ -317,9 +314,6 @@ pub fn text_render(
 
                             let line_advance = glyph.x + base.x;
 
-                            min_x = min_x.min(line_start + line_advance);
-                            max_x = max_x.max(line_start + line_advance + glyph.w);
-
                             let base = Vec2::new(glyph.x, glyph.y)
                                 + base
                                 + offset
@@ -368,9 +362,6 @@ pub fn text_render(
 
                             let w = bb.width() as f32 / units_per_em as f32 * glyph.font_size;
                             let h = bb.height() as f32 / units_per_em as f32 * glyph.font_size;
-
-                            min_x = min_x.min(line_start + glyph.x);
-                            max_x = max_x.max(line_start + glyph.x + w);
 
                             let base = Vec2::new(glyph.x + bx, glyph.y + by)
                                 + offset
@@ -465,15 +456,10 @@ pub fn text_render(
             advance += run.line_w;
         }
 
-        if max_x < min_x {
-            min_x = 0.0;
-            max_x = 0.001;
-        }
-
-        let dimension = Vec2::new(max_x - min_x, height);
-        let center = Vec2::new((max_x + min_x) / 2., -height / 2.);
+        let dimension = Vec2::new(width, height);
+        let center = Vec2::new(width * (0.5 - styling.align.as_fac()), -height / 2.);
         let offset = *styling.anchor * dimension - center;
-        let bb_min = Vec2::new(min_x, -height);
+        let bb_min = Vec2::new(width * -styling.align.as_fac(), -height);
 
         mesh.post_process(bb_min, dimension);
 
