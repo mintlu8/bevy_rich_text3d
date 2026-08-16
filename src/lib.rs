@@ -3,7 +3,6 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::collapsible_if)]
 mod atlas;
-mod change_detection;
 mod color_table;
 mod emoji;
 mod export;
@@ -43,11 +42,6 @@ use bevy::{
     window::{PrimaryWindow, Window},
 };
 
-use change_detection::TouchMaterialSet;
-#[cfg(feature = "2d")]
-pub use change_detection::TouchTextMaterial2dPlugin;
-#[cfg(feature = "3d")]
-pub use change_detection::TouchTextMaterial3dPlugin;
 pub use export::{GlyphMeta, MeshExport, MeshExportEntry};
 pub use fetch::{FetchedCondition, FetchedTextSegment, SharedTextSegment};
 pub use fetcher::TextFetch;
@@ -254,17 +248,9 @@ impl Plugin for Text3dPlugin {
             PostUpdate,
             render::text_render
                 .run_if(resource_exists::<TextRenderer>)
-                .in_set(Text3dSet)
-                .before(TouchMaterialSet),
+                .in_set(Text3dSet),
         );
         app.configure_sets(PostUpdate, Text3dSet.before(TransformSystems::Propagate));
-        app.configure_sets(PostUpdate, TouchMaterialSet.in_set(Text3dSet));
-        #[cfg(feature = "2d")]
-        app.add_plugins(TouchTextMaterial2dPlugin::<
-            bevy::sprite_render::ColorMaterial,
-        >::default());
-        #[cfg(feature = "3d")]
-        app.add_plugins(TouchTextMaterial3dPlugin::<bevy::pbr::StandardMaterial>::default());
 
         #[cfg(feature = "reflect")]
         app.register_type::<Text3d>()
