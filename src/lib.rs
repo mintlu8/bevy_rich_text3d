@@ -43,7 +43,7 @@ use bevy::{
 };
 
 pub use export::{GlyphMeta, MeshExport, MeshExportEntry};
-pub use fetch::{FetchedCondition, FetchedTextSegment, SharedTextSegment};
+pub use fetch::{FetchedCondition, FetchedTextSegment, SharedSegment};
 pub use fetcher::TextFetch;
 use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
 pub use misc::*;
@@ -256,7 +256,7 @@ impl Plugin for Text3dPlugin {
         app.register_type::<Text3d>()
             .register_type::<Text3dStyling>()
             .register_type::<Text3dSegment>()
-            .register_type::<SharedTextSegment>()
+            .register_type::<SharedSegment>()
             .register_type::<FetchedTextSegment>()
             .register_type::<Text3dPlugin>();
     }

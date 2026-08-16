@@ -4,11 +4,11 @@ use bevy::ecs::{component::Component, world::Mut};
 #[cfg(feature = "reflect")]
 use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
 
-/// If alongside a [`FetchedTextSegment`], prevent [`Text3d`](crate::Text3d) from despawning it on remove.
+/// If alongside a [`FetchedTextSegment`] or ['FetchedCondition`], prevent [`Text3d`](crate::Text3d) from despawning it on remove.
 #[derive(Debug, Component, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Component, Default))]
-pub struct SharedTextSegment;
+pub struct SharedSegment;
 
 /// A string segment on a component, as opposed to in a [`Text3d`](crate::Text3d).
 ///

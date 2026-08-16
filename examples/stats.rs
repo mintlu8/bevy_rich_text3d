@@ -16,7 +16,7 @@ use bevy::{
 };
 use bevy_rich_text3d::{
     ConditionOutput, FetchTextPlugin, FetchedCondition, ParseBuilder, ParseError, SegmentStyle,
-    SharedTextSegment, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyling, TextAlign,
+    SharedSegment, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyling, TextAlign,
     TextAnchor, TextAtlas, TextFetch,
 };
 use rustc_hash::FxHashMap;
@@ -109,7 +109,7 @@ pub fn main() {
     );
     let shift_pressed = app
         .world_mut()
-        .spawn((SharedTextSegment, ShiftPressed, FetchedCondition(false)))
+        .spawn((SharedSegment, ShiftPressed, FetchedCondition(false)))
         .id();
 
     app.add_systems(PostStartup, move |mut commands: Commands, name_to_unit: Res<NameToUnit>, mut standard_materials: ResMut<Assets<StandardMaterial>>| {

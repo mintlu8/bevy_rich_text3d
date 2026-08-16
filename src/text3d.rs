@@ -12,7 +12,8 @@ use bevy::{
 use bevy::{ecs::reflect::ReflectComponent, reflect::Reflect};
 
 use crate::{
-    styling::SegmentStyle, Text3dBounds, Text3dDimensionOut, Text3dStyling, TextAtlasHandle,
+    styling::SegmentStyle, SharedSegment, Text3dBounds, Text3dDimensionOut, Text3dStyling,
+    TextAtlasHandle,
 };
 
 /// A rich text component.
@@ -56,6 +57,16 @@ pub enum Text3dSegment {
     },
 }
 
+impl Text3dSegment {
+    pub fn get_external_segment(&self) -> Option<Entity> {
+        match self {
+            Text3dSegment::Extract(entity) => Some(*entity),
+            Text3dSegment::SkipIf { condition, .. } => Some(*condition),
+            _ => None,
+        }
+    }
+}
+
 fn text_3d_on_remove(mut world: DeferredWorld, cx: HookContext) {
     let Ok(entity) = world.get_entity(cx.entity) else {
         return;
@@ -66,11 +77,11 @@ fn text_3d_on_remove(mut world: DeferredWorld, cx: HookContext) {
     let to_be_dropped: Vec<_> = text
         .segments
         .iter()
-        .filter_map(|x| match &x.0 {
-            Text3dSegment::String(_) => None,
-            Text3dSegment::Image { .. } => None,
-            Text3dSegment::Extract(entity) => Some(*entity),
-            Text3dSegment::SkipIf { condition, .. } => Some(*condition),
+        .filter_map(|x| x.0.get_external_segment())
+        .filter(|entity| {
+            world
+                .get_entity(*entity)
+                .is_ok_and(|e| !e.contains::<SharedSegment>())
         })
         .collect();
     let mut commands = world.commands();
