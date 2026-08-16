@@ -142,13 +142,7 @@ impl TextRenderer {
             for (id, mut atlas, mut image, workload) in workload {
                 for (str, style) in workload {
                     let mut buffer = Buffer::new(font_system, Metrics::new(style.size, style.size));
-                    buffer.set_text(
-                        font_system,
-                        str.as_ref(),
-                        &style.as_attrs(),
-                        Shaping::Advanced,
-                        None,
-                    );
+                    buffer.set_text(str.as_ref(), &style.as_attrs(), Shaping::Advanced, None);
                     buffer.shape_until_scroll(font_system, false);
                     let join = style.stroke_join;
                     let stroke = style.stroke;
