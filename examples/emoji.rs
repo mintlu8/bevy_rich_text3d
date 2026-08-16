@@ -26,7 +26,7 @@ use bevy_rectray::{
 };
 use bevy_rich_text3d::{
     ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin,
-    Text3dSegment, Text3dStyling, TextAtlas,
+    Text3dSegment, Text3dStyle, TextAtlas,
 };
 
 pub fn main() {
@@ -143,7 +143,7 @@ fn setup(
             ParseBuilder::new().with_parse_value(parse),
         )
         .unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -162,7 +162,7 @@ fn setup(
             ParseBuilder::new().with_parse_value(parse),
         )
         .unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -177,7 +177,7 @@ fn setup(
         ChildOf(layout),
         Transform2D::default(),
         Text3d::parse("Smile {smile}", ParseBuilder::new().with_parse_value(parse)).unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -196,7 +196,7 @@ fn setup(
             ParseBuilder::new().with_parse_value(parse),
         )
         .unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),

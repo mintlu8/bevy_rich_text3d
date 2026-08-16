@@ -14,7 +14,7 @@ use bevy::{
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     DefaultPlugins,
 };
-use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyling, TextAlign, TextAnchor, TextAtlas};
+use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyle, TextAlign, TextAnchor, TextAtlas};
 
 pub fn main() {
     App::new()
@@ -46,7 +46,7 @@ fn setup(
     // Tests empty string works.
     commands.spawn((
         Text3d::new(""),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -59,7 +59,7 @@ fn setup(
 
     commands.spawn((
         Text3d::new("Hello World!"),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -74,7 +74,7 @@ fn setup(
         Text3d::new(
             "This application is powered by bevy,\ncosmic_text, tiny_skia and bevy_rich_text3d!",
         ),
-        Text3dStyling {
+        Text3dStyle {
             font: "monospace".into(),
             color: Srgba::new(0., 1., 1., 1.),
             align: TextAlign::Right,

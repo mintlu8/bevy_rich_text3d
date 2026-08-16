@@ -12,7 +12,7 @@ use bevy::{
     },
     DefaultPlugins,
 };
-use bevy_rich_text3d::{LoadFonts, Text3d, Text3dBounds, Text3dPlugin, Text3dStyling, TextAtlas};
+use bevy_rich_text3d::{LoadFonts, Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAtlas};
 
 pub fn main() {
     App::new()
@@ -45,7 +45,7 @@ pub fn main() {
                 });
                 commands.spawn((
                     Text3d::new("System Serif"),
-                    Text3dStyling {
+                    Text3dStyle {
                         size: 32.,
                         color: Srgba::new(1., 1., 0., 1.),
                         ..Default::default()
@@ -58,7 +58,7 @@ pub fn main() {
 
                 commands.spawn((
                     Text3d::new("System Monospace"),
-                    Text3dStyling {
+                    Text3dStyle {
                         font: "monospace".into(),
                         size: 32.,
                         color: Srgba::new(1., 1., 0., 1.),
@@ -72,7 +72,7 @@ pub fn main() {
 
                 commands.spawn((
                     Text3d::new("Roboto"),
-                    Text3dStyling {
+                    Text3dStyle {
                         font: "Roboto".into(),
                         size: 32.,
                         color: Srgba::new(1., 1., 0., 1.),
@@ -86,7 +86,7 @@ pub fn main() {
 
                 commands.spawn((
                     Text3d::new("Ponomar"),
-                    Text3dStyling {
+                    Text3dStyle {
                         font: "Ponomar".into(),
                         size: 32.,
                         color: Srgba::new(1., 1., 0., 1.),

@@ -6,7 +6,7 @@ use std::{
 use bevy::{asset::AssetId, color::Srgba, image::Image, math::Vec2};
 
 use crate::{
-    export::TextMeshFaceCategory, line::LineMode, SegmentStyle, Text3dSegment, Text3dStyling,
+    export::TextMeshFaceCategory, line::LineMode, SegmentStyle, Text3dSegment, Text3dStyle,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -51,7 +51,7 @@ pub struct DrawRequest {
     pub category: TextMeshFaceCategory,
 }
 
-impl Text3dStyling {
+impl Text3dStyle {
     /// Note: Things drawn last gets rendered first.
     pub(crate) fn fill_draw_requests(
         &self,

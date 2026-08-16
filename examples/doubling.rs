@@ -27,8 +27,7 @@ use bevy::{
 };
 use bevy_rectray::{Anchor, Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D};
 use bevy_rich_text3d::{
-    Text3d, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyling, TextAtlas,
-    TextAtlasHandle,
+    Text3d, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyle, TextAtlas, TextAtlasHandle,
 };
 
 pub fn main() {
@@ -99,7 +98,7 @@ fn setup(
     commands.spawn((
         ChildOf(window),
         Text3d::parse_raw(purpose).unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 12.,
             color: Srgba::WHITE,
             ..Default::default()
@@ -115,7 +114,7 @@ fn setup(
 
     commands.spawn((
         Text3d::new(include_str!("lorem_cn.txt")),
-        Text3dStyling {
+        Text3dStyle {
             size: 16.,
             color: Srgba::new(1., 1., 0., 1.),
             ..Default::default()
@@ -130,7 +129,7 @@ fn setup(
 
     commands.spawn((
         Text3d::new(include_str!("lorem_cn.txt")),
-        Text3dStyling {
+        Text3dStyle {
             size: 16.,
             color: Srgba::new(1., 1., 0., 1.),
             ..Default::default()
@@ -156,7 +155,7 @@ fn setup(
 
 pub fn increment_on_space_press(
     mut input: MessageReader<KeyboardInput>,
-    mut query: Query<&mut Text3dStyling, With<First>>,
+    mut query: Query<&mut Text3dStyle, With<First>>,
 ) {
     for key in input.read() {
         if key.key_code == KeyCode::Space && !key.repeat && key.state.is_pressed() {

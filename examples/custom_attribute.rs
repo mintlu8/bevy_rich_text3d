@@ -21,7 +21,7 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    GlyphMeta, MeshExport, MeshExportEntry, Text3d, Text3dPlugin, Text3dStyling, TextAtlas,
+    GlyphMeta, MeshExport, MeshExportEntry, Text3d, Text3dPlugin, Text3dStyle, TextAtlas,
 };
 
 #[derive(Debug, Clone, TypePath, AsBindGroup, Asset)]
@@ -94,7 +94,7 @@ pub fn main() {
             );
             commands.spawn((
                 Text3d::parse_raw("Something {v-1:**CRAZY**} is happening!").unwrap(),
-                Text3dStyling {
+                Text3dStyle {
                     size: 64.0,
                     export: MeshExport::Custom(vec![
                         MeshExportEntry::new(MY_ATTRIBUTE, &[

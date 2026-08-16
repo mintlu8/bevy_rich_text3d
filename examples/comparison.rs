@@ -23,7 +23,7 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rectray::RectrayPlugin;
-use bevy_rich_text3d::{LoadFonts, Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
+use bevy_rich_text3d::{LoadFonts, Text3d, Text3dPlugin, Text3dStyle, TextAtlas};
 
 pub fn main() {
     App::new()
@@ -64,7 +64,7 @@ fn setup(
 
     commands.spawn((
         Text3d::new("Rt3d: An example sentence:"),
-        Text3dStyling {
+        Text3dStyle {
             size: SIZE,
             font: "Roboto".into(),
             color: Srgba::WHITE,
@@ -118,7 +118,7 @@ fn setup(
 
 pub fn update(
     mut input: MessageReader<KeyboardInput>,
-    mut rt3d: Query<(&mut Text3dStyling, &mut Transform), Without<TextFont>>,
+    mut rt3d: Query<(&mut Text3dStyle, &mut Transform), Without<TextFont>>,
     mut t2d: Query<(&mut TextFont, &mut Transform), Without<Text>>,
     mut ui: Query<&mut TextFont, With<Text>>,
     mut entry: Local<usize>,

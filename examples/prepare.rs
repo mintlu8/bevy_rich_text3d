@@ -15,7 +15,7 @@ use bevy::{
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     DefaultPlugins,
 };
-use bevy_rich_text3d::{DrawStyle, Text3d, Text3dPlugin, Text3dStyling, TextAtlas, TextRenderer};
+use bevy_rich_text3d::{DrawStyle, Text3d, Text3dPlugin, Text3dStyle, TextAtlas, TextRenderer};
 
 pub fn main() {
     App::new()
@@ -73,7 +73,7 @@ pub fn main() {
                 ));
                 commands.spawn((
                     Text3d::new("Hello World!"),
-                    Text3dStyling {
+                    Text3dStyle {
                         size: 64.,
                         stroke: NonZero::new(10),
                         color: Srgba::new(0., 1., 1., 1.),

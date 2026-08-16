@@ -10,7 +10,7 @@ use ttf_parser::Face;
 use crate::{
     styling::{FloatDecimal, GlyphEntry, GlyphTextureOf},
     tess::PathEncoder,
-    SegmentStyle, Text3dSegment, Text3dStyling, TextAtlas,
+    SegmentStyle, Text3dSegment, Text3dStyle, TextAtlas,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -228,7 +228,7 @@ impl LineMode {
         atlas: &mut TextAtlas,
         image: &mut Image,
         attrs: &SegmentStyle,
-        style: &Text3dStyling,
+        style: &Text3dStyle,
         stroke: Option<NonZero<u32>>,
     ) -> Option<Rect> {
         let entry = GlyphEntry::Glyph {

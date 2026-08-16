@@ -14,7 +14,7 @@ use bevy::{
     shader::ShaderRef,
     DefaultPlugins,
 };
-use bevy_rich_text3d::{GlyphMeta, MeshExport, Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
+use bevy_rich_text3d::{GlyphMeta, MeshExport, Text3d, Text3dPlugin, Text3dStyle, TextAtlas};
 
 #[derive(Debug, Clone, TypePath, AsBindGroup, Asset)]
 pub struct SpookyShader {
@@ -63,7 +63,7 @@ pub fn main() {
             );
             commands.spawn((
                 Text3d::parse_raw("Something {s-4, s-white, transparent, v-1:SPOOKY} is happening!").unwrap(),
-                Text3dStyling {
+                Text3dStyle {
                     size: 64.0,
                     export: MeshExport::Uv1(GlyphMeta::RandomPerGlyph, GlyphMeta::MagicNumber),
                     ..Default::default()
@@ -73,7 +73,7 @@ pub fn main() {
             ));
             commands.spawn((
                 Text3d::parse_raw("{s-white, v-1:HELP!}").unwrap(),
-                Text3dStyling {
+                Text3dStyle {
                     size: 64.0,
                     export: MeshExport::Uv1(GlyphMeta::RandomPerVertex, GlyphMeta::MagicNumber),
                     ..Default::default()

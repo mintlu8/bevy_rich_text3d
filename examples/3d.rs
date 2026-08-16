@@ -14,7 +14,7 @@ use bevy::{
     prelude::{Commands, Mesh, Plane3d, Projection, ResMut, Transform},
     DefaultPlugins,
 };
-use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyling, TextAtlas};
+use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyle, TextAtlas};
 
 pub fn main() {
     App::new()
@@ -47,7 +47,7 @@ fn setup(
 
     commands.spawn((
         Text3d::new("Hello World!"),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(1., 0., 0., 1.),
@@ -67,7 +67,7 @@ fn setup(
 
     commands.spawn((
         Text3d::new("Bevy is the best!"),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 0.4, 1., 1.),
@@ -87,7 +87,7 @@ fn setup(
 
     commands.spawn((
         Text3d::parse_raw("~~__a lot of layers__~~").unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(1., 0.0, 1., 1.),

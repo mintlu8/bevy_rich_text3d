@@ -17,7 +17,7 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    GlyphMeta, MeshExport, Text3d, Text3dBounds, Text3dPlugin, Text3dStyling, TextAlign, TextAtlas,
+    GlyphMeta, MeshExport, Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAlign, TextAtlas,
 };
 
 #[derive(Debug, Clone, TypePath, AsBindGroup, Asset)]
@@ -80,7 +80,7 @@ pub fn main() {
             );
             commands.spawn((
                 Text3d::new(include_str!("lorem.txt")),
-                Text3dStyling {
+                Text3dStyle {
                     align: TextAlign::Left,
                     export: MeshExport::Uv1(GlyphMeta::UvX, GlyphMeta::UvY),
                     ..Default::default()
@@ -92,7 +92,7 @@ pub fn main() {
 
             commands.spawn((
                 Text3d::new(include_str!("lorem.txt")),
-                Text3dStyling {
+                Text3dStyle {
                     align: TextAlign::Left,
                     export: MeshExport::Uv1(GlyphMeta::GlyphUvX, GlyphMeta::GlyphUvY),
                     ..Default::default()
@@ -116,7 +116,7 @@ pub fn main() {
             );
             commands.spawn((
                 Text3d::new("Lorem ipsum dolor sit amet."),
-                Text3dStyling {
+                Text3dStyle {
                     align: TextAlign::Left,
                     size: 64.,
                     export: MeshExport::Uv1(GlyphMeta::Advance, GlyphMeta::PerGlyphAdvance),
@@ -141,7 +141,7 @@ pub fn main() {
 
             commands.spawn((
                 Text3d::parse_raw("~~__categorized__~~").unwrap(),
-                Text3dStyling {
+                Text3dStyle {
                     size: 64.,
                     stroke: NonZero::new(10),
                     text_shadow: Some((Srgba::BLACK, Vec2::new(4., 4.))),

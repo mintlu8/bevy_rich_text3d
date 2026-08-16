@@ -27,8 +27,8 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    DrawStyle, LoadFonts, Text3d, Text3dPlugin, Text3dStyling, TextAtlas,
-    TextProgressReportCallback, TextRenderer,
+    DrawStyle, LoadFonts, Text3d, Text3dPlugin, Text3dStyle, TextAtlas, TextProgressReportCallback,
+    TextRenderer,
 };
 
 #[derive(Default)]
@@ -137,7 +137,7 @@ pub fn main() {
                 ));
                 commands.spawn((
                     Text3d::new("Hello World!"),
-                    Text3dStyling {
+                    Text3dStyle {
                         font: "Roboto".into(),
                         size: 64.,
                         ..Default::default()

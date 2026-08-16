@@ -13,8 +13,8 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    FetchedTextSegment, ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
-    Text3dSegment, Text3dStyling, TextAlign, TextAtlas,
+    FetchedText, ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
+    Text3dSegment, Text3dStyle, TextAlign, TextAtlas,
 };
 
 #[derive(Debug, Component)]
@@ -51,7 +51,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<StandardM
                 .with_parse_value(|s| {
                     if s == "fps" {
                         Ok((Text3dSegment::Extract(
-                            commands.spawn((FetchedTextSegment::EMPTY, FetchFPS)).id()
+                            commands.spawn((FetchedText::EMPTY, FetchFPS)).id()
                         ), SegmentStyle::default()))
                     } else {
                         Err(ParseError::Custom(format!("Bad value {s}.")))
@@ -60,7 +60,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<StandardM
         ).unwrap();
     commands.spawn((
         text,
-        Text3dStyling {
+        Text3dStyle {
             size: 32.,
             color: Srgba::new(0., 1., 1., 1.),
             align: TextAlign::Center,
@@ -79,7 +79,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<StandardM
     ));
 }
 
-fn fps(fps: Res<DiagnosticsStore>, mut query: Query<&mut FetchedTextSegment, With<FetchFPS>>) {
+fn fps(fps: Res<DiagnosticsStore>, mut query: Query<&mut FetchedText, With<FetchFPS>>) {
     let Some(fps) = fps.get(&FrameTimeDiagnosticsPlugin::FPS) else {
         return;
     };

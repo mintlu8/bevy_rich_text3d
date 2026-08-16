@@ -16,7 +16,7 @@ use bevy::{
 };
 use bevy_rich_text3d::{
     ConditionOutput, FetchTextPlugin, FetchedCondition, ParseBuilder, ParseError, SegmentStyle,
-    SharedSegment, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyling, TextAlign,
+    SharedSegment, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyle, TextAlign,
     TextAnchor, TextAtlas, TextFetch,
 };
 use rustc_hash::FxHashMap;
@@ -166,7 +166,7 @@ pub fn main() {
             ).unwrap();
             commands.spawn((
                 text1,
-                Text3dStyling {
+                Text3dStyle {
                     size: 32.,
                     color: Srgba::new(0., 1., 1., 1.),
                     align: TextAlign::Center,
@@ -182,7 +182,7 @@ pub fn main() {
 
             commands.spawn((
                 text2,
-                Text3dStyling {
+                Text3dStyle {
                     size: 32.,
                     color: Srgba::new(1., 0., 0., 1.),
                     align: TextAlign::Center,
@@ -198,7 +198,7 @@ pub fn main() {
 
             commands.spawn((
                 text3,
-                Text3dStyling {
+                Text3dStyle {
                     size: 32.,
                     color: Srgba::new(0., 1., 1., 1.),
                     align: TextAlign::Center,
@@ -214,7 +214,7 @@ pub fn main() {
 
             commands.spawn((
                 text4,
-                Text3dStyling {
+                Text3dStyle {
                     size: 32.,
                     color: Srgba::new(1., 0., 0., 1.),
                     align: TextAlign::Center,

@@ -43,12 +43,18 @@ use bevy::{
 };
 
 pub use export::{GlyphMeta, MeshExport, MeshExportEntry};
-pub use fetch::{FetchedCondition, FetchedTextSegment, SharedSegment};
+pub use fetch::{FetchedCondition, FetchedText, SharedSegment};
 pub use fetcher::TextFetch;
 use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
 pub use misc::*;
 pub use parse_util::{ConditionOutput, ParseBuilder, ParseError};
-pub use styling::{SegmentSize, SegmentStyle, Text3dStyling};
+pub use styling::{SegmentSize, SegmentStyle, Text3dStyle};
+#[allow(deprecated)]
+pub type Text3dStyling = Text3dStyle;
+#[allow(deprecated)]
+pub type SharedTextSegment = SharedSegment;
+#[allow(deprecated)]
+pub type FetchedTextSegment = FetchedText;
 pub use text3d::{Text3d, Text3dSegment};
 
 fn synchronize_scale_factor(
@@ -254,10 +260,10 @@ impl Plugin for Text3dPlugin {
 
         #[cfg(feature = "reflect")]
         app.register_type::<Text3d>()
-            .register_type::<Text3dStyling>()
+            .register_type::<Text3dStyle>()
             .register_type::<Text3dSegment>()
             .register_type::<SharedSegment>()
-            .register_type::<FetchedTextSegment>()
+            .register_type::<FetchedText>()
             .register_type::<Text3dPlugin>();
     }
 

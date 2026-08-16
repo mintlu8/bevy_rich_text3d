@@ -1,4 +1,4 @@
-use crate::FetchedTextSegment;
+use crate::FetchedText;
 use bevy::ecs::{
     change_detection::DetectChanges, component::Component, entity::Entity, query::Without,
     system::Query, world::EntityRef,
@@ -8,7 +8,7 @@ use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
 
 /// A component that fetches data as a string from the world.
 #[derive(Component)]
-#[require(FetchedTextSegment)]
+#[require(FetchedText)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Component, from_reflect = false))]
 pub struct TextFetch {
@@ -50,7 +50,7 @@ impl TextFetch {
 
 /// Triggers the [`TextFetch`] component.
 pub fn text_fetch_system(
-    mut channels: Query<(&mut TextFetch, &mut FetchedTextSegment)>,
+    mut channels: Query<(&mut TextFetch, &mut FetchedText)>,
     other: Query<EntityRef, Without<TextFetch>>,
 ) {
     for (mut channel, mut text) in channels.iter_mut() {

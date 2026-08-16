@@ -17,7 +17,7 @@ use bevy::{
     },
     DefaultPlugins,
 };
-use bevy_rich_text3d::{Text3d, Text3dBounds, Text3dPlugin, Text3dStyling, TextAtlas};
+use bevy_rich_text3d::{Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAtlas};
 
 pub fn main() {
     App::new()
@@ -68,7 +68,7 @@ fn update(
     if input.just_pressed(MouseButton::Left) {
         commands.spawn((
             Text3d::new(MESSAGES[fastrand::usize(0..3)]),
-            Text3dStyling {
+            Text3dStyle {
                 size: 32.,
                 color: Srgba::new(1., 1., 0., 1.),
                 text_shadow: Some((Srgba::BLACK, Vec2::new(2., -2.))),

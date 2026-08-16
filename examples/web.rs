@@ -20,7 +20,7 @@ use bevy_rectray::{
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
 };
 use bevy_rich_text3d::{
-    LoadFonts, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dStyling, TextAtlas,
+    LoadFonts, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dStyle, TextAtlas,
 };
 
 pub fn main() {
@@ -82,7 +82,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         ChildOf(layout),
         Transform2D::default(),
         Text3d::parse_raw("__Hello Underline!__").unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -97,7 +97,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         ChildOf(layout),
         Transform2D::default(),
         Text3d::parse_raw("Use \\_\\_escape characters\\_\\_ otherwise.").unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -112,7 +112,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         ChildOf(layout),
         Transform2D::default(),
         Text3d::parse_raw("This __underline__ thing sure is neat!").unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             color: Srgba::new(0., 1., 1., 1.),
             ..Default::default()
@@ -125,7 +125,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         ChildOf(layout),
         Transform2D::default(),
         Text3d::parse_raw("__underline__, ~~strikethrough~~ or ~~__both__~~!").unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -143,7 +143,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
             "__{black:{s-red:r}{s-orange:a}{s-yellow:i}{s-green:n}{s-blue:b}{s-purple:o}{s-pink:w}}__ or __{red:r}{orange:a}{yellow:i}{green:n}{blue:b}{purple:o}{pink:w}__",
         )
         .unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -161,7 +161,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
             "__~~{f-Roboto: Different fonts ha}{f-Ponomar:ve different metrics!}~~__",
         )
         .unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
@@ -176,7 +176,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         ChildOf(layout),
         Transform2D::default(),
         Text3d::parse_raw("~~__Maybe a bit of everything?__~~").unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),

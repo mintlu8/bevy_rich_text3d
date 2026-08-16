@@ -14,11 +14,11 @@ use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
 #[derive(Debug, Component, Clone)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Component, Default))]
-pub struct Text3dStyling {
+pub struct Text3dStyle {
     /// Size of the font, corresponding to world space units.
     ///
     /// Ths is cached per unique value so keep the amount of unique values of `size` low,
-    /// use [`Text3dStyling::world_scale`] instead for small variations.
+    /// use [`Text3dStyle::world_scale`] instead for small variations.
     pub size: f32,
     /// Name of the font, by default `"serif"`.
     ///
@@ -63,13 +63,13 @@ pub struct Text3dStyling {
     pub tab_width: u16,
     /// If set, overwrite the size of `em` in the generated mesh.
     ///
-    /// By default the mesh size is relative to [`Text3dStyling::size`], which is equivalent to `Some((size, size))`.
+    /// By default the mesh size is relative to [`Text3dStyle::size`], which is equivalent to `Some((size, size))`.
     pub world_scale: Option<Vec2>,
     /// If `Some`, render a text shadow.
     pub text_shadow: Option<(Srgba, Vec2)>,
 }
 
-impl Default for Text3dStyling {
+impl Default for Text3dStyle {
     fn default() -> Self {
         Self {
             size: 16.,
@@ -120,7 +120,7 @@ pub struct SegmentStyle {
 }
 
 impl SegmentStyle {
-    pub fn as_attr<'t>(&'t self, base: &'t Text3dStyling) -> Attrs<'t> {
+    pub fn as_attr<'t>(&'t self, base: &'t Text3dStyle) -> Attrs<'t> {
         let family_name = self.font.as_ref().map(Arc::as_ref).unwrap_or(&base.font);
         let family = family(family_name);
 

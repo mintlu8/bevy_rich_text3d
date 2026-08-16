@@ -14,14 +14,14 @@ use std::{mem, num::NonZero};
 use ttf_parser::{Face, GlyphId};
 
 use crate::{
-    fetch::{FetchedCondition, FetchedTextSegment},
+    fetch::{FetchedCondition, FetchedText},
     layers::{DrawRequest, DrawType, Layer},
     line::LineRun,
     mesh_util::ExtractedMesh,
     styling::{FloatDecimal, GlyphEntry},
     tess::PathEncoder,
     text3d::{Text3d, Text3dSegment},
-    SegmentStyle, StrokeJoin, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyling,
+    SegmentStyle, StrokeJoin, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyle,
     TextAtlas, TextAtlasHandle, TextRenderer,
 };
 
@@ -75,13 +75,13 @@ pub fn text_render(
     mut text_query: Query<(
         Ref<Text3d>,
         Ref<Text3dBounds>,
-        Ref<Text3dStyling>,
+        Ref<Text3dStyle>,
         &TextAtlasHandle,
         Option<&mut Mesh2d>,
         Option<&mut Mesh3d>,
         &mut Text3dDimensionOut,
     )>,
-    segments: Query<Ref<FetchedTextSegment>>,
+    segments: Query<Ref<FetchedText>>,
     conditions: Query<Ref<FetchedCondition>>,
     mut draw_requests: Local<Vec<DrawRequest>>,
     mut sort_buffer: Local<Vec<(Layer, [u16; 6])>>,
@@ -484,7 +484,7 @@ pub fn text_render(
 fn get_atlas_rect(
     font_system: &mut FontSystem,
     scale_factor: f32,
-    styling: &Text3dStyling,
+    styling: &Text3dStyle,
     atlas: &mut TextAtlas,
     image: &mut Image,
     glyph: &LayoutGlyph,

@@ -12,15 +12,15 @@ use bevy::{
 use bevy::{ecs::reflect::ReflectComponent, reflect::Reflect};
 
 use crate::{
-    styling::SegmentStyle, SharedSegment, Text3dBounds, Text3dDimensionOut, Text3dStyling,
+    styling::SegmentStyle, SharedSegment, Text3dBounds, Text3dDimensionOut, Text3dStyle,
     TextAtlasHandle,
 };
 
 /// A rich text component.
 ///
-/// Requires [`Text3dStyling`], [`Text3dBounds`], [`TextAtlasHandle`], [`Text3dDimensionOut`].
+/// Requires [`Text3dStyle`], [`Text3dBounds`], [`TextAtlasHandle`], [`Text3dDimensionOut`].
 #[derive(Debug, Component)]
-#[require(Text3dDimensionOut, Text3dBounds, TextAtlasHandle, Text3dStyling)]
+#[require(Text3dDimensionOut, Text3dBounds, TextAtlasHandle, Text3dStyle)]
 #[component(on_remove = text_3d_on_remove)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Component))]

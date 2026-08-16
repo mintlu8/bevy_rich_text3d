@@ -21,7 +21,7 @@ use bevy_rectray::{
 };
 use bevy_rich_text3d::{
     ConditionOutput, LoadFonts, ParseBuilder, ParseError, Text3d, Text3dDimensionOut, Text3dPlugin,
-    Text3dStyling, TextAtlas,
+    Text3dStyle, TextAtlas,
 };
 
 pub fn main() {
@@ -93,7 +93,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
             ParseBuilder::new().with_parse_condition(parse),
         )
         .unwrap(),
-        Text3dStyling {
+        Text3dStyle {
             size: 64.,
             stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),

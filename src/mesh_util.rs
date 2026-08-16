@@ -8,7 +8,7 @@ use bevy::{
 use crate::{
     export::{MeshExportCache, MeshExportCacheData, TextMeshFaceCategory},
     layers::Layer,
-    GlyphMeta, Text3dStyling,
+    GlyphMeta, Text3dStyle,
 };
 
 // Take the allocation if possible but clear the data.
@@ -57,7 +57,7 @@ impl<'t> ExtractedMesh<'t> {
     pub fn new(
         mesh: &'t mut Mesh,
         sort_buffer: &'t mut Vec<(Layer, [u16; 6])>,
-        style: &Text3dStyling,
+        style: &Text3dStyle,
     ) -> Self {
         sort_buffer.clear();
         let positions = recycle_mesh!(mesh, ATTRIBUTE_POSITION, Float32x3);
@@ -139,7 +139,7 @@ impl<'t> ExtractedMesh<'t> {
         advance: f32,
         magic_number: f32,
         category: TextMeshFaceCategory,
-        styling: &Text3dStyling,
+        styling: &Text3dStyle,
         rng: &mut fastrand::Rng,
     ) {
         let mesh_rect = Rect {
@@ -170,7 +170,7 @@ impl<'t> ExtractedMesh<'t> {
         advance: f32,
         magic_number: f32,
         category: TextMeshFaceCategory,
-        styling: &Text3dStyling,
+        styling: &Text3dStyle,
         rng: &mut fastrand::Rng,
     ) {
         let i = self.positions.len() as u16;
