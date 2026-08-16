@@ -10,9 +10,9 @@ use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
 #[cfg_attr(feature = "reflect", reflect(Component, Default))]
 pub struct SharedSegment;
 
-/// A string segment on a component, as opposed to in a [`Text3d`](crate::Text3d).
+/// A string segment on a component that can be referenced by a [`Text3d`](crate::Text3d).
 ///
-/// By default [`Text3d`](crate::Text3d) removes all linked [`FetchedTextSegment`] on remove,
+/// By default [`Text3d`](crate::Text3d) removes all linked [`FetchedText`] on remove,
 /// add [`SharedSegment`] to prevent this behavior.
 #[derive(Debug, Component, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
@@ -44,9 +44,9 @@ impl FetchedText {
     }
 }
 
-/// A string segment on a component, as opposed to in a [`Text3d`](crate::Text3d).
+/// A boolean condition on a component that can be referenced by a [`Text3d`](crate::Text3d).
 ///
-/// By default [`Text3d`](crate::Text3d) removes all linked [`FetchedTextSegment`] on remove,
+/// By default [`Text3d`](crate::Text3d) removes all linked [`FetchedCondition`] on remove,
 /// add [`SharedSegment`] to prevent this behavior.
 #[derive(Debug, Component, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
