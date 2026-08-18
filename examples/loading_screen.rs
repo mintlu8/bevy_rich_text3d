@@ -50,7 +50,7 @@ pub fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(Text3dPlugin {
-            default_atlas_dimension: (8192, 8192),
+            default_atlas_dimension: (16384, 16384),
             scale_factor: 2.,
             sync_scale_factor_with_main_window: false,
             ..Default::default()

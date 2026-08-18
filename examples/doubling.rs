@@ -88,7 +88,7 @@ fn setup(
         .spawn((RectrayWindow, RectrayFrame::default()))
         .id();
 
-    let purpose = "{#24:Press space to increase font size.}\n\n\
+    let purpose = "{$24:Press space to increase font size.}\n\n\
         This will increase the number of glyphs cached. \
         The texture will double in height if full, \
         and will eventually panic if reaching texture size limit. \
