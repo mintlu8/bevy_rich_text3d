@@ -51,7 +51,7 @@ impl MaterialExtension for SpookyShader {
             Mesh::ATTRIBUTE_NORMAL.at_shader_location(1),
             Mesh::ATTRIBUTE_UV_0.at_shader_location(2),
             Mesh::ATTRIBUTE_COLOR.at_shader_location(5),
-            MY_ATTRIBUTE.at_shader_location(30),
+            MY_ATTRIBUTE.at_shader_location(17),
         ])?;
         descriptor.vertex.buffers = vec![vertex_layout];
         Ok(())
@@ -59,7 +59,7 @@ impl MaterialExtension for SpookyShader {
 }
 
 const MY_ATTRIBUTE: MeshVertexAttribute =
-    MeshVertexAttribute::new("text_attribute", 666, VertexFormat::Float32x4);
+    MeshVertexAttribute::new("text_attribute", 17, VertexFormat::Float32x4);
 
 pub fn main() {
     App::new()

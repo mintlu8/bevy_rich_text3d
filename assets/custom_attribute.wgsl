@@ -1,4 +1,3 @@
-
 #import bevy_pbr::{
     pbr_functions,
     mesh_functions,
@@ -26,7 +25,7 @@ struct Vertex {
 #ifdef VERTEX_COLORS
     @location(5) color: vec4<f32>,
 #endif
-    @location(30) text_attribute: vec4<f32>,
+    @location(17) text_attribute: vec4<f32>,
 #ifdef MORPH_TARGETS
     @builtin(vertex_index) index: u32,
 #endif
@@ -50,7 +49,7 @@ struct VertexOutput1 {
 #ifdef VISIBILITY_RANGE_DITHER
     @location(7) @interpolate(flat) visibility_range_dither: i32,
 #endif
-    @location(666) text_attribute: vec4<f32>,
+    @location(17) text_attribute: vec4<f32>,
 }
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput1 {
@@ -73,7 +72,7 @@ fn vertex(vertex: Vertex) -> VertexOutput1 {
     let y = cos(t) * sin(t * 3.7 + vertex.text_attribute.x * 3.0);
     let pos = out.world_position.xyz + vec3(x, y, 0.0) * intensity * vertex.text_attribute.y;
     // Add a wave effect to non-wobbling items.
-    let y2 = cos(t / 3.0 + vertex.text_attribute.a / 2.0) * 4.0; 
+    let y2 = cos(t / 3.0 + vertex.text_attribute.a / 2.0) * 4.0;
     let pos2 = pos + vec3(0.0, y2, 0.0) * (1.0 - vertex.text_attribute.y);
     out.position = position_world_to_clip(pos2);
 #endif

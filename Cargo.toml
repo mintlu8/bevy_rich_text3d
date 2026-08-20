@@ -31,7 +31,7 @@ sys-locale = "0.3.2"
 thiserror = "2.0.9"
 tiny-skia = { version = "0.12.0", default-features = false, features = ["std", "simd"]}
 ttf-parser = "0.25.1"
-write-fonts = { version = "0.46.0", features = ["read"] }
+write-fonts = { version = "0.49.0", features = ["read"] }
 
 [profile.dev]
 opt-level = 3
