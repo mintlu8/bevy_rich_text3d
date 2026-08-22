@@ -2,7 +2,7 @@ use bevy::{
     app::{App, PostStartup, Startup, Update},
     asset::Assets,
     color::{Color, Srgba},
-    ecs::query::With,
+    ecs::{change_detection::DetectChanges, query::With, world::Ref},
     input::{keyboard::KeyCode, ButtonInput},
     light::GlobalAmbientLight,
     math::Vec3,
@@ -15,9 +15,9 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    ConditionOutput, FetchTextPlugin, FetchedCondition, ParseBuilder, ParseError, SegmentStyle,
+    ConditionOutput, FetchedCondition, FetchedText, ParseBuilder, ParseError, SegmentStyle,
     SharedSegment, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyle, TextAlign,
-    TextAnchor, TextAtlas, TextFetch,
+    TextAnchor, TextAtlas,
 };
 use rustc_hash::FxHashMap;
 use std::str::FromStr;
@@ -62,7 +62,6 @@ pub fn main() {
             load_system_fonts: true,
             ..Default::default()
         })
-        .add_plugins(FetchTextPlugin)
         .insert_resource(GlobalAmbientLight {
             color: Color::WHITE,
             brightness: 800.,
@@ -133,9 +132,7 @@ pub fn main() {
                     let unit = *name_to_unit.0.get(*name)
                         .ok_or(ParseError::Custom(format!("Unknown unit {name}.")))?;
                     Ok((Text3dSegment::Extract(
-                        commands.spawn(TextFetch::fetch_component::<StatMap>(unit, move |map| {
-                            (map.0.get(&stat).copied().unwrap_or_default() + add).to_string()
-                        })).id()
+                        commands.spawn(FetchStat(unit, stat, add)).id()
                     ), SegmentStyle::default()))
                 } else {
                     Err(ParseError::Custom("".to_owned()))
@@ -237,6 +234,7 @@ pub fn main() {
         });
     app.add_systems(Update, randomize_stats);
     app.add_systems(Update, check_shift);
+    app.add_systems(Update, fetch_stats);
     app.run();
 }
 
@@ -254,6 +252,22 @@ fn randomize_stats(
                 .0
                 .iter_mut()
                 .for_each(|(_, v)| *v = fastrand::i32(0..10));
+        }
+    }
+}
+
+#[derive(Debug, Component)]
+#[require(FetchedText)]
+struct FetchStat(Entity, Stat, i32);
+
+fn fetch_stats(mut query: Query<(&FetchStat, &mut FetchedText)>, stats: Query<Ref<StatMap>>) {
+    for (fetch, string) in &mut query {
+        if let Ok(unit) = stats.get(fetch.0) {
+            if unit.is_changed() {
+                if let Some(stat) = unit.0.get(&fetch.1) {
+                    FetchedText::write_if_changed(string, *stat + fetch.2);
+                }
+            }
         }
     }
 }

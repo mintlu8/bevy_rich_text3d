@@ -109,10 +109,15 @@ impl Text3d {
     ///
     /// ## Inputs
     ///
-    /// * `fetch_string`: Parses strings to obtain values from the world.
-    ///     * [`Text3dSegment::String`] should be returned for static values.
-    ///     * [`Text3dSegment::Extract`] should be returned after spawning a string fetcher for dynamic values.
-    /// * `stylesheet`: Parses strings as [`SegmentStyle`].
+    /// * [`ParseValueFn`]
+    ///   * [`Text3dSegment::String`] should be returned for static values.
+    ///   * [`Text3dSegment::Extract`] should be returned after spawning a [`FetchedText`](crate::FetchedText) for dynamic values.
+    ///   * Since an index is provided, it is possible to return an empty segment and manually update it.
+    /// * [`ParseStyleFn`]
+    ///   Parses strings as [`SegmentStyle`].
+    /// * [`ParseConditionFn`]
+    ///   * [`ConditionOutput::Constant`] should be returned for static condition.
+    ///   * [`ConditionOutput::Dynamic`] should be returned after spawning a [`FetchedCondition`](crate::FetchedCondition) for dynamic values.
     ///
     /// We trim whitespaces before passing arguments to these functions.
     pub fn parse(
@@ -224,7 +229,8 @@ impl Text3d {
                     };
                 }
                 ('}', Command) => {
-                    let (segment, style) = parser.parse_value.call(buffer.trim())?;
+                    let (segment, style) =
+                        parser.parse_value.call(segments.len(), buffer.trim())?;
                     let style = style!().join(style);
                     segments.push((segment, style));
                     buffer.clear();

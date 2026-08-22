@@ -7,7 +7,6 @@ mod color_table;
 mod emoji;
 mod export;
 mod fetch;
-mod fetcher;
 mod layers;
 mod line;
 mod loading;
@@ -44,7 +43,6 @@ use bevy::{
 
 pub use export::{GlyphMeta, MeshExport, MeshExportEntry};
 pub use fetch::{FetchedCondition, FetchedText, SharedSegment};
-pub use fetcher::TextFetch;
 use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
 pub use misc::*;
 pub use parse_util::{ConditionOutput, ParseBuilder, ParseError};
@@ -277,25 +275,5 @@ impl Plugin for Text3dPlugin {
         } else {
             app.insert_resource(self.load_fonts_blocking(fonts));
         }
-    }
-}
-
-/// Enables the [`TextFetch`] component.
-///
-/// This was in [`Text3dPlugin`] in early versions.
-#[derive(Debug, Clone)]
-pub struct FetchTextPlugin;
-
-impl Plugin for FetchTextPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            fetcher::text_fetch_system
-                .in_set(Text3dSet)
-                .before(render::text_render),
-        );
-
-        #[cfg(feature = "reflect")]
-        app.register_type::<TextFetch>();
     }
 }

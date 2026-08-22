@@ -36,7 +36,7 @@ pub struct Text3d {
 pub enum Text3dSegment {
     /// A string segment.
     String(String),
-    /// [`FetchedTextSegment`](crate::FetchedTextSegment) on an entity.
+    /// [`FetchedText`](crate::FetchedText) on an entity.
     Extract(Entity),
     /// Renders an image or emoji inside the text.
     ///
@@ -50,6 +50,7 @@ pub enum Text3dSegment {
         /// Represents width / em, usually `1.0` for squares.
         width: f32,
     },
+    /// [`FetchedCondition`](crate::FetchedCondition) on an entity.
     SkipIf {
         condition: Entity,
         skip_if: bool,
@@ -134,5 +135,20 @@ impl Text3d {
     /// without triggering change detection.
     pub fn map_single_mut<'a>(this: &'a mut Mut<Self>) -> Option<Mut<'a, String>> {
         this.reborrow().filter_map_unchanged(Self::get_single_mut)
+    }
+
+    /// Obtain a segment from index.
+    pub fn get_segment_mut(&mut self, index: usize) -> Option<&mut String> {
+        if let Some((Text3dSegment::String(s), _)) = self.segments.get_mut(index) {
+            Some(s)
+        } else {
+            None
+        }
+    }
+
+    /// Obtain a segment from index without triggering change detection.
+    pub fn map_segment_mut<'a>(this: &'a mut Mut<Self>, index: usize) -> Option<Mut<'a, String>> {
+        this.reborrow()
+            .filter_map_unchanged(|v| Self::get_segment_mut(v, index))
     }
 }

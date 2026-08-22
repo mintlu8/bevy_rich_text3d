@@ -66,7 +66,7 @@ pub trait ParseStyleFn {
 }
 
 pub trait ParseValueFn {
-    fn call(&mut self, s: &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>;
+    fn call(&mut self, index: usize, s: &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>;
 }
 
 pub trait ParseConditionFn {
@@ -80,7 +80,11 @@ impl ParseStyleFn for DefaultFn {
 }
 
 impl ParseValueFn for DefaultFn {
-    fn call(&mut self, s: &str) -> Result<(Text3dSegment, SegmentStyle), ParseError> {
+    fn call(
+        &mut self,
+        _index: usize,
+        s: &str,
+    ) -> Result<(Text3dSegment, SegmentStyle), ParseError> {
         Err(ParseError::Custom(format!("Unknown value {s}.")))
     }
 }
@@ -98,7 +102,11 @@ impl<T: FnMut(&str) -> Result<SegmentStyle, ParseError>> ParseStyleFn for T {
 }
 
 impl<T: FnMut(&str) -> Result<(Text3dSegment, SegmentStyle), ParseError>> ParseValueFn for T {
-    fn call(&mut self, s: &str) -> Result<(Text3dSegment, SegmentStyle), ParseError> {
+    fn call(
+        &mut self,
+        _index: usize,
+        s: &str,
+    ) -> Result<(Text3dSegment, SegmentStyle), ParseError> {
         self(s)
     }
 }
