@@ -59,6 +59,7 @@ pub enum ConditionOutput {
 }
 
 /// Placeholder default value.
+#[derive(Debug, Clone, Copy, Default)]
 pub struct DefaultFn;
 
 pub trait ParseStyleFn {
@@ -111,6 +112,19 @@ impl<T: FnMut(&str) -> Result<(Text3dSegment, SegmentStyle), ParseError>> ParseV
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct IndexedPVF<T>(T);
+
+impl<T: FnMut(usize, &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>> ParseValueFn for IndexedPVF<T> {
+    fn call(
+        &mut self,
+        index: usize,
+        s: &str,
+    ) -> Result<(Text3dSegment, SegmentStyle), ParseError> {
+        self.0(index, s)
+    }
+}
+
 impl<T: FnMut(&str) -> Result<ConditionOutput, ParseError>> ParseConditionFn for T {
     fn call(&mut self, s: &str) -> Result<ConditionOutput, ParseError> {
         self(s)
@@ -118,6 +132,7 @@ impl<T: FnMut(&str) -> Result<ConditionOutput, ParseError>> ParseConditionFn for
 }
 
 /// Builder pattern input for parsing rich text.
+#[derive(Debug, Clone, Copy)]
 pub struct ParseBuilder<
     Style: ParseStyleFn = DefaultFn,
     Value: ParseValueFn = DefaultFn,
@@ -165,6 +180,17 @@ impl<A: ParseStyleFn, C: ParseConditionFn> ParseBuilder<A, DefaultFn, C> {
         ParseBuilder {
             parse_style: self.parse_style,
             parse_value: f,
+            parse_condition: self.parse_condition,
+        }
+    }
+
+    pub fn with_parse_value_indexed<F: FnMut(usize, &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>>(
+        self,
+        f: F,
+    ) -> ParseBuilder<A, IndexedPVF<F>, C> {
+        ParseBuilder {
+            parse_style: self.parse_style,
+            parse_value: IndexedPVF(f),
             parse_condition: self.parse_condition,
         }
     }
