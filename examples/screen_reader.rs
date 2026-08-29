@@ -1,10 +1,29 @@
-//! Showcases and stress tests underlines strikethroughs and their various interactions.
+//! Tests basic a11y feature with a screen reader, use up/down arrow keys to cycle through selections.
 
 use std::num::NonZero;
 
 use accesskit::{Node, Role};
 use bevy::{
-    DefaultPlugins, a11y::AccessibilityNode, app::{App, Startup, Update}, asset::Assets, camera::Camera2d, color::{Color, Srgba}, ecs::{entity::Entity, hierarchy::ChildOf, query::Changed, resource::Resource, system::{Query, Res}}, input::{ButtonInput, keyboard::KeyCode}, input_focus::{FocusCause, InputFocus}, light::GlobalAmbientLight, math::{Vec2, Vec3}, mesh::Mesh2d, prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform}, sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
+    a11y::AccessibilityNode,
+    app::{App, Startup, Update},
+    asset::Assets,
+    camera::Camera2d,
+    color::{Color, Srgba},
+    ecs::{
+        entity::Entity,
+        hierarchy::ChildOf,
+        query::Changed,
+        resource::Resource,
+        system::{Query, Res},
+    },
+    input::{keyboard::KeyCode, ButtonInput},
+    input_focus::{FocusCause, InputFocus},
+    light::GlobalAmbientLight,
+    math::{Vec2, Vec3},
+    mesh::Mesh2d,
+    prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
+    sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
+    DefaultPlugins,
 };
 use bevy_rectray::{
     layout::{Container, LayoutObject, ParagraphLayout, Rev, X, Y},
@@ -73,83 +92,93 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         ))
         .id();
 
-    let a = commands.spawn((
-        ChildOf(layout),
-        Transform2D::default(),
-        Text3d::parse_raw("1").unwrap(),
-        Text3dStyle {
-            size: 64.,
-            stroke: NonZero::new(10),
-            color: Srgba::new(0., 1., 1., 1.),
-            stroke_color: Srgba::BLACK,
-            ..Default::default()
-        },
-        AccessibilityNode(Node::new(Role::TextRun)),
-        Mesh2d::default(),
-        MeshMaterial2d(mat.clone()),
-    )).id();
+    let a = commands
+        .spawn((
+            ChildOf(layout),
+            Transform2D::default(),
+            Text3d::parse_raw("1").unwrap(),
+            Text3dStyle {
+                size: 64.,
+                stroke: NonZero::new(10),
+                color: Srgba::new(0., 1., 1., 1.),
+                stroke_color: Srgba::BLACK,
+                ..Default::default()
+            },
+            AccessibilityNode(Node::new(Role::TextRun)),
+            Mesh2d::default(),
+            MeshMaterial2d(mat.clone()),
+        ))
+        .id();
 
-    let b = commands.spawn((
-        ChildOf(layout),
-        Transform2D::default(),
-        Text3d::parse_raw("2").unwrap(),
-        Text3dStyle {
-            size: 64.,
-            stroke: NonZero::new(10),
-            color: Srgba::new(0., 1., 1., 1.),
-            stroke_color: Srgba::BLACK,
-            ..Default::default()
-        },
-        AccessibilityNode(Node::new(Role::TextRun)),
-        Mesh2d::default(),
-        MeshMaterial2d(mat.clone()),
-    )).id();
+    let b = commands
+        .spawn((
+            ChildOf(layout),
+            Transform2D::default(),
+            Text3d::parse_raw("2").unwrap(),
+            Text3dStyle {
+                size: 64.,
+                stroke: NonZero::new(10),
+                color: Srgba::new(0., 1., 1., 1.),
+                stroke_color: Srgba::BLACK,
+                ..Default::default()
+            },
+            AccessibilityNode(Node::new(Role::TextRun)),
+            Mesh2d::default(),
+            MeshMaterial2d(mat.clone()),
+        ))
+        .id();
 
-    let c = commands.spawn((
-        ChildOf(layout),
-        Transform2D::default(),
-        Text3d::parse_raw("3").unwrap(),
-        Text3dStyle {
-            size: 64.,
-            color: Srgba::new(0., 1., 1., 1.),
-            ..Default::default()
-        },
-        AccessibilityNode(Node::new(Role::TextRun)),
-        Mesh2d::default(),
-        MeshMaterial2d(mat.clone()),
-    )).id();
+    let c = commands
+        .spawn((
+            ChildOf(layout),
+            Transform2D::default(),
+            Text3d::parse_raw("3").unwrap(),
+            Text3dStyle {
+                size: 64.,
+                color: Srgba::new(0., 1., 1., 1.),
+                ..Default::default()
+            },
+            AccessibilityNode(Node::new(Role::TextRun)),
+            Mesh2d::default(),
+            MeshMaterial2d(mat.clone()),
+        ))
+        .id();
 
-    let d = commands.spawn((
-        ChildOf(layout),
-        Transform2D::default(),
-        Text3d::parse_raw("4").unwrap(),
-        Text3dStyle {
-            size: 64.,
-            stroke: NonZero::new(10),
-            color: Srgba::new(0., 1., 1., 1.),
-            stroke_color: Srgba::BLACK,
-            ..Default::default()
-        },
-        AccessibilityNode(Node::new(Role::TextRun)),
-        Mesh2d::default(),
-        MeshMaterial2d(mat.clone()),
-    )).id();
+    let d = commands
+        .spawn((
+            ChildOf(layout),
+            Transform2D::default(),
+            Text3d::parse_raw("4").unwrap(),
+            Text3dStyle {
+                size: 64.,
+                stroke: NonZero::new(10),
+                color: Srgba::new(0., 1., 1., 1.),
+                stroke_color: Srgba::BLACK,
+                ..Default::default()
+            },
+            AccessibilityNode(Node::new(Role::TextRun)),
+            Mesh2d::default(),
+            MeshMaterial2d(mat.clone()),
+        ))
+        .id();
 
-    let e = commands.spawn((
-        ChildOf(layout),
-        Transform2D::default(),
-        Text3d::parse_raw("5").unwrap(),
-        Text3dStyle {
-            size: 64.,
-            stroke: NonZero::new(10),
-            color: Srgba::new(0., 1., 1., 1.),
-            stroke_color: Srgba::BLACK,
-            ..Default::default()
-        },
-        AccessibilityNode(Node::new(Role::TextRun)),
-        Mesh2d::default(),
-        MeshMaterial2d(mat.clone()),
-    )).id();
+    let e = commands
+        .spawn((
+            ChildOf(layout),
+            Transform2D::default(),
+            Text3d::parse_raw("Hello, World!").unwrap(),
+            Text3dStyle {
+                size: 64.,
+                stroke: NonZero::new(10),
+                color: Srgba::new(0., 1., 1., 1.),
+                stroke_color: Srgba::BLACK,
+                ..Default::default()
+            },
+            AccessibilityNode(Node::new(Role::TextRun)),
+            Mesh2d::default(),
+            MeshMaterial2d(mat.clone()),
+        ))
+        .id();
 
     commands.spawn((
         Camera2d,
