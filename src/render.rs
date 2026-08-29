@@ -260,7 +260,7 @@ pub fn text_render(
 
         #[cfg(feature = "a11y")]
         if let Some(mut node) = access_node {
-            node.0.set_value(alt_text);
+            node.0.set_label(alt_text);
         }
 
         buffer.shape_until_scroll(font_system, true);
