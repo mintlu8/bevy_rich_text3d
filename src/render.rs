@@ -1,4 +1,5 @@
 use bevy::{
+    a11y::AccessibilityNode,
     asset::{AssetId, Assets, RenderAssetUsages},
     ecs::{
         change_detection::DetectChanges,
@@ -80,6 +81,7 @@ pub fn text_render(
         Option<&mut Mesh2d>,
         Option<&mut Mesh3d>,
         &mut Text3dDimensionOut,
+        Option<&mut AccessibilityNode>,
     )>,
     segments: Query<Ref<FetchedText>>,
     conditions: Query<Ref<FetchedCondition>>,
@@ -103,7 +105,7 @@ pub fn text_render(
     }
     let font_system = &mut lock.font_system;
     let scale_factor = settings.scale_factor;
-    'main: for (text, bounds, styling, atlas, mut mesh2d, mut mesh3d, mut output) in
+    'main: for (text, bounds, styling, atlas, mut mesh2d, mut mesh3d, mut output, access_node) in
         text_query.iter_mut()
     {
         let Some(atlas) = atlases.get_mut(atlas.0.id()) else {
@@ -124,8 +126,8 @@ pub fn text_render(
         }
 
         for segment in &text.segments {
-            if let Text3dSegment::Image { image, .. } = &segment.0 {
-                if !images.contains(image) {
+            if let Text3dSegment::Image(image) = &segment.0 {
+                if !images.contains(&image.handle) {
                     output.initialized = false;
                     continue 'main;
                 }
@@ -194,6 +196,9 @@ pub fn text_render(
         buffer.set_size(Some(width_limit), None);
         buffer.set_tab_width(styling.tab_width);
 
+        #[cfg(feature = "a11y")]
+        let mut alt_text = String::new();
+
         let mut to_skip = 0;
         buffer.set_rich_text(
             text.segments
@@ -206,13 +211,22 @@ pub fn text_render(
                     }
                     Some((
                         match text {
-                            Text3dSegment::String(s) => s.as_str(),
-                            Text3dSegment::Extract(e) => segments
-                                .get(*e)
-                                .map(|x| x.into_inner().as_str())
-                                .unwrap_or(""),
-                            Text3dSegment::Image { image: _, width } => {
-                                settings.get_placeholder_glyph(*width)
+                            Text3dSegment::String(s) => {
+                                #[cfg(feature = "a11y")]
+                                alt_text.push_str(s.as_str());
+                                s.as_str()
+                            }
+                            Text3dSegment::Extract(e) => {
+                                let s = segments
+                                    .get(*e)
+                                    .map(|x| x.into_inner().as_str())
+                                    .unwrap_or("");
+                                #[cfg(feature = "a11y")]
+                                alt_text.push_str(s);
+                                s
+                            }
+                            Text3dSegment::Image(image) => {
+                                settings.get_placeholder_glyph(image.width)
                             }
                             Text3dSegment::SkipIf {
                                 condition,
@@ -243,6 +257,11 @@ pub fn text_render(
             Shaping::Advanced,
             None,
         );
+
+        #[cfg(feature = "a11y")]
+        if let Some(mut node) = access_node {
+            node.0.set_value(alt_text);
+        }
 
         buffer.shape_until_scroll(font_system, true);
 

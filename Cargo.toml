@@ -14,7 +14,9 @@ Mesh based raster rich text implementation for bevy.
 keywords = ["bevy", "text", "font"]
 
 [features]
+default = ["a11y"]
 reflect = []
+a11y = []
 
 [dependencies]
 bevy = { version = "0.19.0", default-features = false, features = [

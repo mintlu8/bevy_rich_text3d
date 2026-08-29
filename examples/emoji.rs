@@ -69,41 +69,14 @@ fn setup(
             ..Default::default()
         };
         match input {
-            "spiral" => Ok((
-                Text3dSegment::Image {
-                    image: server.load("spiral.png"),
-                    width: 1.,
-                },
-                white,
-            )),
-            "wide" => Ok((
-                Text3dSegment::Image {
-                    image: server.load("spiral.png"),
-                    width: 2.,
-                },
-                white,
-            )),
+            "spiral" => Ok((Text3dSegment::image(server.load("spiral.png"), 1.), white)),
+            "wide" => Ok((Text3dSegment::image(server.load("spiral.png"), 2.), white)),
             "thin" => Ok((
-                Text3dSegment::Image {
-                    image: server.load("spiral.png"),
-                    width: 0.5,
-                },
+                Text3dSegment::image_alt_text(server.load("spiral.png"), 0.5, "spiral".into()),
                 white,
             )),
-            "smile" => Ok((
-                Text3dSegment::Image {
-                    image: EMOJI_SMILE.clone(),
-                    width: 1.,
-                },
-                white,
-            )),
-            "ultrawide" => Ok((
-                Text3dSegment::Image {
-                    image: EMOJI_SMILE.clone(),
-                    width: 6.,
-                },
-                white,
-            )),
+            "smile" => Ok((Text3dSegment::image(EMOJI_SMILE.clone(), 1.), white)),
+            "ultrawide" => Ok((Text3dSegment::image(EMOJI_SMILE.clone(), 6.), white)),
             _ => Err(ParseError::NotSupported("Expected spiral.")),
         }
     };

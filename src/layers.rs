@@ -60,11 +60,11 @@ impl Text3dStyle {
         requests: &mut Vec<DrawRequest>,
     ) {
         requests.clear();
-        if let Text3dSegment::Image { image, .. } = segment {
+        if let Text3dSegment::Image(image) = segment {
             let color = attrs.fill_color.unwrap_or(self.color);
             requests.push(DrawRequest {
                 sort: Layer::None,
-                request: DrawType::Image(image.id()),
+                request: DrawType::Image(image.handle.id()),
                 color,
                 offset: Vec2::ZERO,
                 category: TextMeshFaceCategory::Image,

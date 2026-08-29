@@ -28,6 +28,17 @@ pub struct Text3d {
     pub segments: Vec<(Text3dSegment, SegmentStyle)>,
 }
 
+/// An image or emoji in [`Text3d`].
+#[derive(Debug, Clone)]
+pub struct Text3dImage {
+    /// Image asset.
+    pub handle: Handle<Image>,
+    /// Represents width / em, usually `1.0` for squares.
+    pub width: f32,
+    /// Text for screen readers.
+    pub alt_text: String,
+}
+
 /// A string segment in [`Text3d`].
 ///
 /// `Extract` reads data from an entity's [`FetchedTextSegment`](crate::FetchedTextSegment) component.
@@ -44,12 +55,7 @@ pub enum Text3dSegment {
     ///
     /// The image will be copied into the text atlas as is regardless of font size.
     /// The image is only loaded once and cannot change.
-    Image {
-        /// Image asset.
-        image: Handle<Image>,
-        /// Represents width / em, usually `1.0` for squares.
-        width: f32,
-    },
+    Image(Box<Text3dImage>),
     /// [`FetchedCondition`](crate::FetchedCondition) on an entity.
     SkipIf {
         condition: Entity,
@@ -59,6 +65,22 @@ pub enum Text3dSegment {
 }
 
 impl Text3dSegment {
+    pub fn image(image: Handle<Image>, width: f32) -> Text3dSegment {
+        Text3dSegment::Image(Box::new(Text3dImage {
+            handle: image,
+            width,
+            alt_text: String::new(),
+        }))
+    }
+
+    pub fn image_alt_text(image: Handle<Image>, width: f32, alt_text: String) -> Text3dSegment {
+        Text3dSegment::Image(Box::new(Text3dImage {
+            handle: image,
+            width,
+            alt_text,
+        }))
+    }
+
     pub fn get_external_segment(&self) -> Option<Entity> {
         match self {
             Text3dSegment::Extract(entity) => Some(*entity),

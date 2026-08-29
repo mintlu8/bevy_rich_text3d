@@ -115,12 +115,10 @@ impl<T: FnMut(&str) -> Result<(Text3dSegment, SegmentStyle), ParseError>> ParseV
 #[derive(Debug, Clone, Copy)]
 pub struct IndexedPVF<T>(T);
 
-impl<T: FnMut(usize, &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>> ParseValueFn for IndexedPVF<T> {
-    fn call(
-        &mut self,
-        index: usize,
-        s: &str,
-    ) -> Result<(Text3dSegment, SegmentStyle), ParseError> {
+impl<T: FnMut(usize, &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>> ParseValueFn
+    for IndexedPVF<T>
+{
+    fn call(&mut self, index: usize, s: &str) -> Result<(Text3dSegment, SegmentStyle), ParseError> {
         self.0(index, s)
     }
 }
@@ -184,7 +182,9 @@ impl<A: ParseStyleFn, C: ParseConditionFn> ParseBuilder<A, DefaultFn, C> {
         }
     }
 
-    pub fn with_parse_value_indexed<F: FnMut(usize, &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>>(
+    pub fn with_parse_value_indexed<
+        F: FnMut(usize, &str) -> Result<(Text3dSegment, SegmentStyle), ParseError>,
+    >(
         self,
         f: F,
     ) -> ParseBuilder<A, IndexedPVF<F>, C> {

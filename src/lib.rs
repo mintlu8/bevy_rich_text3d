@@ -53,7 +53,7 @@ pub type Text3dStyling = Text3dStyle;
 pub type SharedTextSegment = SharedSegment;
 #[allow(deprecated)]
 pub type FetchedTextSegment = FetchedText;
-pub use text3d::{Text3d, Text3dSegment};
+pub use text3d::{Text3d, Text3dImage, Text3dSegment};
 
 fn synchronize_scale_factor(
     mut settings: ResMut<Text3dPlugin>,
