@@ -6,7 +6,7 @@ use accesskit::{Node, Role};
 use bevy::{
     a11y::AccessibilityNode,
     app::{App, Startup, Update},
-    asset::Assets,
+    asset::{AssetServer, Assets},
     camera::Camera2d,
     color::{Color, Srgba},
     ecs::{
@@ -30,7 +30,8 @@ use bevy_rectray::{
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
 };
 use bevy_rich_text3d::{
-    LoadFonts, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dStyle, TextAtlas,
+    LoadFonts, ParseBuilder, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dSegment,
+    Text3dStyle, TextAtlas,
 };
 
 pub fn main() {
@@ -70,7 +71,11 @@ fn rectray_sync(
 #[derive(Resource)]
 pub struct List([Entity; 5]);
 
-fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMaterial>>) {
+fn setup(
+    mut commands: Commands,
+    mut standard_materials: ResMut<Assets<ColorMaterial>>,
+    server: Res<AssetServer>,
+) {
     let mat = standard_materials.add(ColorMaterial {
         texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
         alpha_mode: AlphaMode2d::Blend,
@@ -148,7 +153,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         .spawn((
             ChildOf(layout),
             Transform2D::default(),
-            Text3d::parse_raw("4").unwrap(),
+            Text3d::parse_raw("Hello, World!").unwrap(),
             Text3dStyle {
                 size: 64.,
                 stroke: NonZero::new(10),
@@ -166,7 +171,20 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
         .spawn((
             ChildOf(layout),
             Transform2D::default(),
-            Text3d::parse_raw("Hello, World!").unwrap(),
+            Text3d::parse(
+                "Bevy is the best {laugh}!",
+                ParseBuilder::new().with_parse_value(|_| {
+                    Ok((
+                        Text3dSegment::image_alt_text(
+                            server.load("smile.png"),
+                            1.,
+                            "smile".to_owned(),
+                        ),
+                        SegmentStyle::default(),
+                    ))
+                }),
+            )
+            .unwrap(),
             Text3dStyle {
                 size: 64.,
                 stroke: NonZero::new(10),

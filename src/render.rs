@@ -226,6 +226,8 @@ pub fn text_render(
                                 s
                             }
                             Text3dSegment::Image(image) => {
+                                #[cfg(feature = "a11y")]
+                                alt_text.push_str(&image.alt_text);
                                 settings.get_placeholder_glyph(image.width)
                             }
                             Text3dSegment::SkipIf {
