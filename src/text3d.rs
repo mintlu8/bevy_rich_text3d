@@ -39,6 +39,16 @@ pub struct Text3dImage {
     pub alt_text: String,
 }
 
+impl Default for Text3dImage {
+    fn default() -> Self {
+        Self {
+            handle: Handle::default(),
+            width: 1.0,
+            alt_text: String::new(),
+        }
+    }
+}
+
 /// A string segment in [`Text3d`].
 ///
 /// `Extract` reads data from an entity's [`FetchedTextSegment`](crate::FetchedTextSegment) component.

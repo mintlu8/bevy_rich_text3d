@@ -1,4 +1,6 @@
 use bevy::mesh::{Mesh, MeshVertexAttribute, VertexAttributeValues};
+#[cfg(feature = "reflect")]
+use bevy::prelude::Reflect;
 
 /// Determines what kind of data each field in [`MeshExport`] carry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

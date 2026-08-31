@@ -58,6 +58,7 @@ pub struct Text3dStyle {
     /// not for opaque3d.
     pub layer_offset: f32,
     /// Determines what to extract as uv1.
+    #[cfg_attr(feature = "reflect", reflect(ignore))]
     pub export: MeshExport,
     /// Tab in terms of spaces, default 4.
     pub tab_width: u16,
@@ -96,6 +97,7 @@ impl Default for Text3dStyle {
 
 /// Size of a segment.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub enum SegmentSize {
     Flat(f32),
     Multiply(f32),

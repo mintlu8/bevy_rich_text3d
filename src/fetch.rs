@@ -1,8 +1,10 @@
-use std::str::FromStr;
+use std::{borrow::Borrow, ops::Deref, str::FromStr};
 
 use bevy::ecs::{component::Component, world::Mut};
 #[cfg(feature = "reflect")]
 use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
+
+use crate::Text3dSegment;
 
 /// If alongside a [`FetchedText`] or [`FetchedCondition`], prevent [`Text3d`](crate::Text3d) from despawning the entity on remove.
 #[derive(Debug, Component, Default)]
@@ -48,6 +50,45 @@ impl FetchedText {
             }
         }
         this.0 = value.to_string()
+    }
+}
+
+impl Text3dSegment {
+    /// Set and trigger change detection if a string like value is changed.
+    pub fn set_if_changed(mut this: Mut<String>, value: impl AsRef<str> + ToString) {
+        if *this != value.as_ref() {
+            *this = value.to_string()
+        }
+    }
+
+    /// Set and trigger change detection if a parsable value is changed.
+    pub fn write_if_changed<T: ToString + FromStr + Eq>(mut this: Mut<String>, value: T) {
+        if let Ok(val) = this.parse::<T>() {
+            if val == value {
+                return;
+            }
+        }
+        *this = value.to_string()
+    }
+}
+
+impl AsRef<str> for FetchedText {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Borrow<str> for FetchedText {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Deref for FetchedText {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
     }
 }
 
