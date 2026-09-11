@@ -23,6 +23,7 @@ use bevy::{
     mesh::Mesh2d,
     prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
+    winit::WinitSettings,
     DefaultPlugins,
 };
 use bevy_rectray::{
@@ -37,6 +38,8 @@ use bevy_rich_text3d::{
 pub fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        // currently only works on reactive mode on macos.
+        .insert_resource(WinitSettings::desktop_app())
         .add_plugins(Text3dPlugin {
             load_system_fonts: true,
             ..Default::default()

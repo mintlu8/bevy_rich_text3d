@@ -7,7 +7,7 @@ use bevy::prelude::{Reflect, ReflectComponent, ReflectDefault};
 use crate::Text3dSegment;
 
 /// If alongside a [`FetchedText`] or [`FetchedCondition`], prevent [`Text3d`](crate::Text3d) from despawning the entity on remove.
-#[derive(Debug, Component, Default)]
+#[derive(Debug, Clone, Copy, Component, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Component, Default))]
 pub struct SharedSegment;
@@ -23,7 +23,7 @@ pub struct SharedSegment;
 /// Users should take care to not mutably dereference this component if no changes are needed,
 /// functions like [`FetchedText::write_if_changed`] or [`FetchedText::set_if_changed`] can help
 /// in this regard.
-#[derive(Debug, Component, Default)]
+#[derive(Debug, Clone, Component, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Component, Default))]
 pub struct FetchedText(pub String);
@@ -100,7 +100,7 @@ impl Deref for FetchedText {
 /// # Change Detection
 ///
 /// As long as change detection is triggered on this component, associated text will be rebuilt.
-#[derive(Debug, Component, Default)]
+#[derive(Debug, Clone, Component, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "reflect", reflect(Component, Default))]
 pub struct FetchedCondition(pub bool);

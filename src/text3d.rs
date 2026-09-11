@@ -19,7 +19,7 @@ use crate::{
 /// A rich text component.
 ///
 /// Requires [`Text3dStyle`], [`Text3dBounds`], [`TextAtlasHandle`], [`Text3dDimensionOut`].
-#[derive(Debug, Component)]
+#[derive(Debug, Clone, Component, Default)]
 #[require(Text3dDimensionOut, Text3dBounds, TextAtlasHandle, Text3dStyle)]
 #[component(on_remove = text_3d_on_remove)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
@@ -52,7 +52,7 @@ impl Default for Text3dImage {
 /// A string segment in [`Text3d`].
 ///
 /// `Extract` reads data from an entity's [`FetchedTextSegment`](crate::FetchedTextSegment) component.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub enum Text3dSegment {
     /// A string segment.
@@ -131,6 +131,15 @@ impl Text3d {
         let string = s.to_string();
         Self {
             segments: vec![(Text3dSegment::String(string), Default::default())],
+        }
+    }
+
+    /// Create a [`Text3d`] with an empty string segment.
+    ///
+    /// To parse rich text, see [`Text3d::parse`].
+    pub fn new_empty() -> Self {
+        Self {
+            segments: vec![(Text3dSegment::String(String::new()), Default::default())],
         }
     }
 
