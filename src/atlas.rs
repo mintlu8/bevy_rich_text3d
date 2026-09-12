@@ -4,7 +4,7 @@ use bevy::{
     asset::{uuid::Uuid, Asset, Assets, Handle, RenderAssetUsages},
     ecs::component::Component,
     image::Image,
-    log::info,
+    log::{info, warn_once},
     math::{IRect, IVec2, Vec2},
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
@@ -90,6 +90,7 @@ impl TextAtlas {
         self.descent = self.descent.max(height);
         if self.pointer.y as usize + self.descent + PADDING >= image.height() as usize {
             info!("Text atlas size expanded!");
+            warn_once!("Text atlas expansion currently requires manually triggering change detection on materials to work.");
             let old_dim = (image.width() * image.height()) as usize;
             image.resize(Extent3d {
                 width: image.width(),

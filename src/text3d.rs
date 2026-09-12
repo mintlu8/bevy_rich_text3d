@@ -30,6 +30,7 @@ pub struct Text3d {
 
 /// An image or emoji in [`Text3d`].
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Text3dImage {
     /// Image asset.
     pub handle: Handle<Image>,
@@ -65,7 +66,7 @@ pub enum Text3dSegment {
     ///
     /// The image will be copied into the text atlas as is regardless of font size.
     /// The image is only loaded once and cannot change.
-    Image(Box<Text3dImage>),
+    Image(Text3dImage),
     /// [`FetchedCondition`](crate::FetchedCondition) on an entity.
     SkipIf {
         condition: Entity,
@@ -76,19 +77,19 @@ pub enum Text3dSegment {
 
 impl Text3dSegment {
     pub fn image(image: Handle<Image>, width: f32) -> Text3dSegment {
-        Text3dSegment::Image(Box::new(Text3dImage {
+        Text3dSegment::Image(Text3dImage {
             handle: image,
             width,
             alt_text: String::new(),
-        }))
+        })
     }
 
     pub fn image_alt_text(image: Handle<Image>, width: f32, alt_text: String) -> Text3dSegment {
-        Text3dSegment::Image(Box::new(Text3dImage {
+        Text3dSegment::Image(Text3dImage {
             handle: image,
             width,
             alt_text,
-        }))
+        })
     }
 
     pub fn get_external_segment(&self) -> Option<Entity> {

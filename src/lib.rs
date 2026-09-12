@@ -108,11 +108,6 @@ pub struct Text3dPlugin {
     ///
     /// If true, load fonts in a separate thread, will panic on platforms like
     /// wasm where threads are not supported.
-    ///
-    /// # Note
-    ///
-    /// Must add `TouchTextMaterial*dPlugin`s to non-standard materials, otherwise
-    /// text drawn before font system is loaded will not be rendered.
     pub asynchronous_load: bool,
     /// Family name for placeholder glyphs used for placing emojis.
     pub placeholder_family: String,
