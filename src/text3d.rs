@@ -28,6 +28,9 @@ pub struct Text3d {
     pub segments: Vec<(Text3dSegment, SegmentStyle)>,
 }
 
+/// Needed for BSN unpin specialization.
+impl Unpin for Text3d {}
+
 /// An image or emoji in [`Text3d`].
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
