@@ -13,8 +13,8 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    FetchedText, ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin,
-    Text3dSegment, Text3dStyle, TextAlign, TextAtlas,
+    FetchedText, ParseBuilder, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment,
+    Text3dStyle, TextAlign, TextAtlas,
 };
 
 #[derive(Debug, Component)]
@@ -54,7 +54,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<StandardM
                             commands.spawn((FetchedText::EMPTY, FetchFPS)).id()
                         ), SegmentStyle::default()))
                     } else {
-                        Err(ParseError::Custom(format!("Bad value {s}.")))
+                        Err(Some(format!("Bad value {s}.")))
                     }
                 }),
         ).unwrap();

@@ -78,6 +78,18 @@ pub enum Text3dSegment {
     },
 }
 
+impl From<&str> for Text3dSegment {
+    fn from(value: &str) -> Self {
+        Text3dSegment::String(value.into())
+    }
+}
+
+impl From<String> for Text3dSegment {
+    fn from(value: String) -> Self {
+        Text3dSegment::String(value)
+    }
+}
+
 impl Text3dSegment {
     pub fn image(image: Handle<Image>, width: f32) -> Text3dSegment {
         Text3dSegment::Image(Text3dImage {

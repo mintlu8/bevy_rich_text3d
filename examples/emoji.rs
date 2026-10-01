@@ -25,8 +25,8 @@ use bevy_rectray::{
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
 };
 use bevy_rich_text3d::{
-    ParseBuilder, ParseError, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin,
-    Text3dSegment, Text3dStyle, TextAtlas,
+    ParseBuilder, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dSegment,
+    Text3dStyle, TextAtlas,
 };
 
 pub fn main() {
@@ -63,7 +63,7 @@ fn setup(
     mut standard_materials: ResMut<Assets<ColorMaterial>>,
     server: Res<AssetServer>,
 ) {
-    let parse = |input: &str| -> Result<(Text3dSegment, SegmentStyle), ParseError> {
+    let parse = |input: &str| -> Result<(Text3dSegment, SegmentStyle), Option<String>> {
         let white = SegmentStyle {
             fill_color: Some(Srgba::WHITE),
             ..Default::default()
@@ -77,7 +77,7 @@ fn setup(
             )),
             "smile" => Ok((Text3dSegment::image(EMOJI_SMILE.clone(), 1.), white)),
             "ultrawide" => Ok((Text3dSegment::image(EMOJI_SMILE.clone(), 6.), white)),
-            _ => Err(ParseError::NotSupported("Expected spiral.")),
+            _ => Err(Some("Expected spiral.".into())),
         }
     };
 

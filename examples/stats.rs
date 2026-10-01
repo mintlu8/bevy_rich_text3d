@@ -15,9 +15,9 @@ use bevy::{
     DefaultPlugins,
 };
 use bevy_rich_text3d::{
-    ConditionOutput, FetchedCondition, FetchedText, ParseBuilder, ParseError, SegmentStyle,
-    SharedSegment, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyle, TextAlign,
-    TextAnchor, TextAtlas,
+    ConditionOutput, FetchedCondition, FetchedText, ParseBuilder, SegmentStyle, SharedSegment,
+    Text3d, Text3dBounds, Text3dPlugin, Text3dSegment, Text3dStyle, TextAlign, TextAnchor,
+    TextAtlas,
 };
 use rustc_hash::FxHashMap;
 use std::str::FromStr;
@@ -35,7 +35,7 @@ pub enum Stat {
 }
 
 impl FromStr for Stat {
-    type Err = ParseError;
+    type Err = Option<String>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s {
@@ -44,7 +44,7 @@ impl FromStr for Stat {
             "agility" => Stat::Agility,
             "defense" => Stat::Defense,
             "stamina" => Stat::Stamina,
-            s => return Err(ParseError::BadCommand(format!("Unknown stat {s}."))),
+            s => return Err(Some(format!("Unknown stat {s}."))),
         })
     }
 }
@@ -130,19 +130,19 @@ pub fn main() {
 
                     let stat = Stat::from_str(stat)?;
                     let unit = *name_to_unit.0.get(*name)
-                        .ok_or(ParseError::Custom(format!("Unknown unit {name}.")))?;
+                        .ok_or(Some(format!("Unknown unit {name}.")))?;
                     Ok((Text3dSegment::Extract(
                         commands.spawn(FetchStat(unit, stat, add)).id()
                     ), SegmentStyle::default()))
                 } else {
-                    Err(ParseError::Custom("".to_owned()))
+                    Err(Some("".to_owned()))
                 }
             };
             let parse_condition = |s: &str| {
                 if s == "shift" {
                     Ok(ConditionOutput::Dynamic(shift_pressed))
                 } else {
-                    Err(ParseError::Custom("".to_owned()))
+                    Err(None)
                 }
             };
             let text1 = Text3d::parse(

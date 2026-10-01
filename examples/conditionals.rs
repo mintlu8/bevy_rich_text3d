@@ -20,7 +20,7 @@ use bevy_rectray::{
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
 };
 use bevy_rich_text3d::{
-    ConditionOutput, LoadFonts, ParseBuilder, ParseError, Text3d, Text3dDimensionOut, Text3dPlugin,
+    ConditionOutput, LoadFonts, ParseBuilder, Text3d, Text3dDimensionOut, Text3dPlugin,
     Text3dStyle, TextAtlas,
 };
 
@@ -82,7 +82,7 @@ fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMate
     let parse = |s: &str| match s {
         "true" => Ok(ConditionOutput::Constant(true)),
         "false" => Ok(ConditionOutput::Constant(false)),
-        _ => Err(ParseError::Custom("Ahh".to_owned())),
+        _ => Err(None),
     };
 
     commands.spawn((
