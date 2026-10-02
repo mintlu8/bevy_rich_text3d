@@ -1,5 +1,7 @@
 use std::{cell::OnceCell, iter::repeat_n, num::NonZeroU32, ops::Range, str::FromStr};
 
+use bevy::log::warn;
+
 use crate::{
     color_table::parse_color,
     misc::{Style, Weight},
@@ -54,7 +56,11 @@ impl Text3d {
     ///
     #[doc = include_str!("parse_doc.md")]
     pub fn bsn_parse_raw(text: impl AsRef<str>) -> Self {
-        Text3d::parse_with_errors(text.as_ref(), ParseBuilder::new()).0
+        let (result, error) = Text3d::parse_with_errors(text.as_ref(), ParseBuilder::new());
+        if let Some(error) = error {
+            warn!("{error}");
+        }
+        result
     }
 
     /// Parse rich text string.
@@ -66,7 +72,11 @@ impl Text3d {
         text: impl AsRef<str>,
         parser: ParseBuilder<impl ParseStyleFn, impl ParseValueFn, impl ParseConditionFn>,
     ) -> Self {
-        Text3d::parse_with_errors(text.as_ref(), parser).0
+        let (result, error) = Text3d::parse_with_errors(text.as_ref(), parser);
+        if let Some(error) = error {
+            warn!("{error}");
+        }
+        result
     }
 }
 
