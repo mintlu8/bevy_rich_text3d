@@ -125,7 +125,8 @@ then add them to `LoadFonts` via `font_embedded`.
 | 0.16 | 0.3-0.4          |
 | 0.17 | 0.5              |
 | 0.18 | 0.6              |
-| 0.19 | 0.7-latest       |
+| 0.19 | 0.7              |
+| 0.20 | 0.8-latest       |
 
 ## License
 
