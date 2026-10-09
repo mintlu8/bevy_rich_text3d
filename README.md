@@ -87,6 +87,13 @@ However, if you need more control over where your glyphs are stored, you can man
 create a `TextAtlas` and `Image` alongside your `Text3d`, they can be managed the same way
 as other assets.
 
+## Atlas Resize
+
+Atlas resize used to be a out of the box supported feature, since bevy 0.19 manual change detection
+is no longer needed as long as atlas is not resized, the feature is now optional. If you need
+atlas resize to work correctly, trigger change detection on your materials when `Text3dDimensionOut`
+is changed.
+
 ## FAQ
 
 * How do I add fonts?
