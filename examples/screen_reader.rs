@@ -4,6 +4,7 @@ use std::num::NonZero;
 
 use accesskit::{Node, Role};
 use bevy::{
+    DefaultPlugins,
     a11y::AccessibilityNode,
     app::{App, Startup, Update},
     asset::{AssetServer, Assets},
@@ -16,7 +17,7 @@ use bevy::{
         resource::Resource,
         system::{Query, Res},
     },
-    input::{keyboard::KeyCode, ButtonInput},
+    input::{ButtonInput, keyboard::KeyCode},
     input_focus::{FocusCause, InputFocus},
     light::GlobalAmbientLight,
     math::{Vec2, Vec3},
@@ -24,11 +25,10 @@ use bevy::{
     prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     winit::WinitSettings,
-    DefaultPlugins,
 };
 use bevy_rectray::{
-    layout::{Container, LayoutObject, ParagraphLayout, Rev, X, Y},
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
+    layout::{Container, LayoutObject, ParagraphLayout, Rev, X, Y},
 };
 use bevy_rich_text3d::{
     LoadFonts, ParseBuilder, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dSegment,

@@ -3,11 +3,12 @@
 use std::cell::OnceCell;
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup, Update},
     asset::{Assets, Handle},
     color::{Color, Srgba},
     ecs::system::Local,
-    input::{mouse::MouseButton, ButtonInput},
+    input::{ButtonInput, mouse::MouseButton},
     light::GlobalAmbientLight,
     math::{Vec2, Vec3},
     pbr::{MeshMaterial3d, StandardMaterial},
@@ -15,7 +16,6 @@ use bevy::{
         AlphaMode, Camera3d, Commands, Mesh3d, OrthographicProjection, Projection, Res, ResMut,
         Transform,
     },
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAtlas};
 

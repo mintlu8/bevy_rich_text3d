@@ -7,6 +7,7 @@
 //! Should fail eventually if reached wgpu's texture limit.
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup},
     asset::{AssetServer, Assets},
     color::{Color, Srgba},
@@ -17,7 +18,6 @@ use bevy::{
         AlphaMode, Camera3d, Commands, Mesh, Mesh3d, OrthographicProjection, Plane3d, Projection,
         Res, ResMut, Transform,
     },
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAtlas};
 

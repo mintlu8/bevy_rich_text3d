@@ -4,13 +4,13 @@ use bevy::{
     image::Image,
     math::{Rect, Vec2},
 };
-use cosmic_text::{fontdb::ID, FontSystem, LayoutGlyph};
+use cosmic_text::{FontSystem, LayoutGlyph, fontdb::ID};
 use ttf_parser::Face;
 
 use crate::{
+    SegmentStyle, Text3dSegment, Text3dStyle, TextAtlas,
     styling::{FloatDecimal, GlyphEntry, GlyphTextureOf},
     tess::PathEncoder,
-    SegmentStyle, Text3dSegment, Text3dStyle, TextAtlas,
 };
 
 #[derive(Debug, Clone, Copy)]

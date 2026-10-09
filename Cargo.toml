@@ -1,7 +1,7 @@
 [package]
 name = "bevy_rich_text3d"
 version = "0.8.0"
-edition = "2021"
+edition = "2024"
 
 authors = ["Mincong Lu <mintlux667@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -19,7 +19,7 @@ reflect = []
 a11y = []
 
 [dependencies]
-bevy = { version = "0.19.0", default-features = false, features = [
+bevy = { version = "0.20.0", default-features = false, features = [
   "bevy_log",
   "bevy_image",
   "bevy_render",
@@ -43,6 +43,6 @@ opt-level = 3
 
 [dev-dependencies]
 accesskit = "0.24.1"
-bevy = "0.19.0"
-bevy_rectray = "0.6.1"
+bevy = "0.20.0"
+bevy_rectray = "0.7.0"
 fastrand = "2.3.0"

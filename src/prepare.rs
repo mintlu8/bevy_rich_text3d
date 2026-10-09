@@ -13,7 +13,7 @@ use bevy::{
 use cosmic_text::{Attrs, Buffer, Family, FontSystem, Metrics, Shaping, Style, Weight};
 use ttf_parser::Face;
 
-use crate::{render::cache_glyph, StrokeJoin, Text3dPlugin, TextAtlas};
+use crate::{StrokeJoin, Text3dPlugin, TextAtlas, render::cache_glyph};
 
 /// An [`Arc<Mutex>`] around [`cosmic_text::FontSystem`],
 /// rendering fonts require exclusive access.
@@ -125,9 +125,9 @@ impl TextRenderer {
         &self,
         settings: &Text3dPlugin,
         workload: impl IntoIterator<Item = (AssetId<TextAtlas>, TextAtlas, Image, I)>
-            + Send
-            + Sync
-            + 'static,
+        + Send
+        + Sync
+        + 'static,
         mut callback: impl TextProgressReportCallback,
     ) -> impl FnOnce() + Send + Sync + 'static
     where

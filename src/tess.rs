@@ -1,4 +1,4 @@
-use crate::{styling::GlyphEntry, TextAtlas};
+use crate::{TextAtlas, styling::GlyphEntry};
 use bevy::{
     image::Image,
     math::{IRect, Vec2},

@@ -6,7 +6,7 @@ use std::{
 use bevy::{asset::AssetId, color::Srgba, image::Image, math::Vec2};
 
 use crate::{
-    export::TextMeshFaceCategory, line::LineMode, SegmentStyle, Text3dSegment, Text3dStyle,
+    SegmentStyle, Text3dSegment, Text3dStyle, export::TextMeshFaceCategory, line::LineMode,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

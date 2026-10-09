@@ -1,6 +1,7 @@
 use std::num::NonZero;
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup},
     asset::asset_value,
     camera::{Camera2d, OrthographicProjection, Projection},
@@ -10,10 +11,9 @@ use bevy::{
     math::Vec3,
     mesh::Mesh2d,
     prelude::Commands,
-    scene::{bsn, CommandsSceneExt},
+    scene::{CommandsSceneExt, bsn},
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     transform::components::Transform,
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{ParseBuilder, Text3d, Text3dPlugin, Text3dStyle, TextAtlas};
 

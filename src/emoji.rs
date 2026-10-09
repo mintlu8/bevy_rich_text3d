@@ -1,4 +1,5 @@
 use write_fonts::{
+    OffsetMarker,
     read::tables::glyf::CurvePoint,
     tables::{
         cmap::{Cmap, CmapSubtable, EncodingRecord, PlatformId, SequentialMapGroup},
@@ -11,7 +12,6 @@ use write_fonts::{
         vmtx::LongMetric,
     },
     types::{FWord, NameId},
-    OffsetMarker,
 };
 
 pub fn create_emoji_font(name: &str, widths: &[f32], c: char) -> Vec<u8> {

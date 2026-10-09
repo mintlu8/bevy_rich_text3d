@@ -31,7 +31,7 @@ use bevy::{
     ecs::{
         query::With,
         resource::Resource,
-        schedule::{common_conditions::resource_exists, IntoScheduleConfigs, SystemSet},
+        schedule::{IntoScheduleConfigs, SystemSet, common_conditions::resource_exists},
         system::{Query, ResMut},
         world::Ref,
     },
@@ -43,7 +43,7 @@ use bevy::{
 
 pub use export::{GlyphMeta, MeshExport, MeshExportEntry};
 pub use fetch::{FetchedCondition, FetchedText, SharedSegment};
-use loading::{load_cosmic_fonts_system, LoadCosmicFonts};
+use loading::{LoadCosmicFonts, load_cosmic_fonts_system};
 pub use misc::*;
 pub use parse_util::{ConditionOutput, ParseBuilder, ParseError};
 pub use styling::{SegmentSize, SegmentStyle, Text3dStyle};

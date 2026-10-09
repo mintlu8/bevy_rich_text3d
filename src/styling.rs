@@ -1,9 +1,9 @@
-use crate::{prepare::family, MeshExport, StrokeJoin, Style, TextAlign, TextAnchor, Weight};
+use crate::{MeshExport, StrokeJoin, Style, TextAlign, TextAnchor, Weight, prepare::family};
 use bevy::asset::AssetId;
 use bevy::image::Image;
 use bevy::{color::Srgba, ecs::component::Component, math::Vec2};
 use cosmic_text::Metrics;
-use cosmic_text::{fontdb::ID, Attrs};
+use cosmic_text::{Attrs, fontdb::ID};
 use std::fmt::Debug;
 use std::{num::NonZeroU32, sync::Arc};
 

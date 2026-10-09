@@ -1,6 +1,7 @@
 use std::num::NonZero;
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup},
     asset::{Asset, Assets},
     color::{Color, Srgba},
@@ -14,7 +15,6 @@ use bevy::{
     reflect::TypePath,
     render::render_resource::AsBindGroup,
     shader::ShaderRef,
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{
     GlyphMeta, MeshExport, Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAlign, TextAtlas,

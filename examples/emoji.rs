@@ -2,8 +2,9 @@
 use std::{cell::OnceCell, num::NonZero};
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup, Update},
-    asset::{uuid_handle, AssetServer, Assets, Handle},
+    asset::{AssetServer, Assets, Handle, uuid_handle},
     camera::Camera2d,
     color::{Color, Srgba},
     ecs::{
@@ -13,16 +14,16 @@ use bevy::{
     },
     image::Image,
     light::GlobalAmbientLight,
-    math::{primitives::Plane3d, Vec2, Vec3},
+    math::{Vec2, Vec3},
     mesh::{Mesh, Mesh2d},
     prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
+    shape::Plane3d,
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     time::Time,
-    DefaultPlugins,
 };
 use bevy_rectray::{
-    layout::{Container, LayoutObject, ParagraphLayout, Rev, X, Y},
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
+    layout::{Container, LayoutObject, ParagraphLayout, Rev, X, Y},
 };
 use bevy_rich_text3d::{
     ParseBuilder, SegmentStyle, Text3d, Text3dDimensionOut, Text3dPlugin, Text3dSegment,

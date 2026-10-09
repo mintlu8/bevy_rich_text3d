@@ -1,5 +1,6 @@
 //! Tests multi-font works correctly.
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup},
     asset::Assets,
     color::{Color, Srgba},
@@ -10,7 +11,6 @@ use bevy::{
         AlphaMode, Camera3d, Commands, Mesh3d, OrthographicProjection, Projection, ResMut,
         Transform,
     },
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{LoadFonts, Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAtlas};
 

@@ -4,7 +4,10 @@
 //!
 //! Should fail eventually if reached wgpu's texture limit.
 
+use std::ops::DerefMut;
+
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup, Update},
     asset::{AssetServer, Assets},
     camera::Camera2d,
@@ -23,7 +26,6 @@ use bevy::{
     mesh::Mesh2d,
     prelude::{Commands, Mesh, Plane3d, Res, ResMut, Transform},
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
-    DefaultPlugins,
 };
 use bevy_rectray::{Anchor, Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D};
 use bevy_rich_text3d::{
@@ -49,6 +51,7 @@ pub fn main() {
         .add_systems(Startup, setup)
         .add_systems(Update, increment_on_space_press)
         .add_systems(Update, rectray_sync)
+        .add_systems(Update, manual_change_detection)
         .run();
 }
 
@@ -60,6 +63,17 @@ fn rectray_sync(
 ) {
     for (out, mut dim) in query.iter_mut() {
         dim.0 = out.dimension;
+    }
+}
+
+fn manual_change_detection(
+    mut mats: ResMut<Assets<ColorMaterial>>,
+    query: Query<&MeshMaterial2d<ColorMaterial>, Changed<Text3dDimensionOut>>,
+) {
+    for id in query.iter() {
+        if let Some(mut mat) = mats.get_mut(id) {
+            mat.deref_mut();
+        }
     }
 }
 

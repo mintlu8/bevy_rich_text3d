@@ -1,4 +1,5 @@
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup},
     asset::{Asset, Assets},
     color::Color,
@@ -18,7 +19,6 @@ use bevy::{
         AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError,
     },
     shader::ShaderRef,
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{
     GlyphMeta, MeshExport, MeshExportEntry, Text3d, Text3dPlugin, Text3dStyle, TextAtlas,

@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use bevy::{
     asset::Handle,
     ecs::{
@@ -12,8 +14,8 @@ use bevy::{
 use bevy::{ecs::reflect::ReflectComponent, reflect::Reflect};
 
 use crate::{
-    styling::SegmentStyle, SharedSegment, Text3dBounds, Text3dDimensionOut, Text3dStyle,
-    TextAtlasHandle,
+    SharedSegment, Text3dBounds, Text3dDimensionOut, Text3dStyle, TextAtlasHandle,
+    styling::SegmentStyle,
 };
 
 /// A rich text component.
@@ -185,6 +187,19 @@ impl Text3d {
             Some(s)
         } else {
             None
+        }
+    }
+
+    /// If only contains an owned segment, set that segment to a value.
+    pub fn set_single(&mut self, value: &str) -> bool {
+        if self.segments.len() == 1
+            && let Some((Text3dSegment::String(s), _)) = self.segments.get_mut(0)
+        {
+            s.clear();
+            let _ = s.write_str(value);
+            true
+        } else {
+            false
         }
     }
 

@@ -1,4 +1,5 @@
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup},
     asset::{Asset, Assets},
     color::Color,
@@ -13,7 +14,6 @@ use bevy::{
     render::render_resource::AsBindGroup,
     shader::ShaderRef,
     time::{Time, Virtual},
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{
     GlyphMeta, MeshExport, Text3d, Text3dBounds, Text3dPlugin, Text3dStyle, TextAlign, TextAtlas,

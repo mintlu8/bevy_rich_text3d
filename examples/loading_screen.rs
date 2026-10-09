@@ -1,9 +1,10 @@
 use std::sync::{
-    atomic::{AtomicU32, Ordering},
     Arc,
+    atomic::{AtomicU32, Ordering},
 };
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup, Update},
     asset::{AssetId, AssetServer, Assets},
     camera::Camera2d,
@@ -24,7 +25,6 @@ use bevy::{
     sprite::Sprite,
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     time::{Time, Virtual},
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{
     DrawStyle, LoadFonts, Text3d, Text3dPlugin, Text3dStyle, TextAtlas, TextProgressReportCallback,

@@ -1,6 +1,7 @@
 //! Compares with bevy's text implementations.
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup, Update},
     asset::{AssetServer, Assets},
     camera::Camera2d,
@@ -19,8 +20,7 @@ use bevy::{
     sprite::Text2d,
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
     text::{FontSize, FontSource, TextFont},
-    ui::{widget::Text, Node, UiRect, Val},
-    DefaultPlugins,
+    ui::{Node, UiRect, Val, widget::Text},
 };
 use bevy_rectray::RectrayPlugin;
 use bevy_rich_text3d::{LoadFonts, Text3d, Text3dPlugin, Text3dStyle, TextAtlas};

@@ -1,4 +1,5 @@
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup, Update},
     asset::Assets,
     color::{Color, Srgba},
@@ -10,7 +11,6 @@ use bevy::{
         AlphaMode, Camera3d, Commands, Component, Mesh3d, OrthographicProjection, Projection,
         Query, Res, ResMut, Transform, With,
     },
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{
     FetchedText, ParseBuilder, SegmentStyle, Text3d, Text3dBounds, Text3dPlugin, Text3dSegment,

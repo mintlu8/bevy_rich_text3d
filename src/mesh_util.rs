@@ -6,9 +6,9 @@ use bevy::{
 };
 
 use crate::{
+    GlyphMeta, Text3dStyle,
     export::{MeshExportCache, MeshExportCacheData, TextMeshFaceCategory},
     layers::Layer,
-    GlyphMeta, Text3dStyle,
 };
 
 // Take the allocation if possible but clear the data.

@@ -1,6 +1,6 @@
 use std::sync::{Arc, OnceLock};
 
-use crate::{emoji::create_emoji_font, LoadFonts, Text3dPlugin, TextRenderer};
+use crate::{LoadFonts, Text3dPlugin, TextRenderer, emoji::create_emoji_font};
 use bevy::{
     ecs::resource::Resource,
     ecs::system::{Commands, ResMut},

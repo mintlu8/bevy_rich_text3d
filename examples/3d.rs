@@ -1,6 +1,7 @@
 use std::{f32::consts::PI, num::NonZero};
 
 use bevy::{
+    DefaultPlugins,
     anti_alias::smaa::{Smaa, SmaaPreset},
     app::{App, Startup},
     asset::Assets,
@@ -12,7 +13,6 @@ use bevy::{
     mesh::{Mesh3d, Meshable},
     pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{Commands, Mesh, Plane3d, Projection, ResMut, Transform},
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{Text3d, Text3dPlugin, Text3dStyle, TextAtlas};
 

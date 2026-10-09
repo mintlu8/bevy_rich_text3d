@@ -15,6 +15,8 @@ use std::{mem, num::NonZero};
 use ttf_parser::{Face, GlyphId};
 
 use crate::{
+    SegmentStyle, StrokeJoin, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyle,
+    TextAtlas, TextAtlasHandle, TextRenderer,
     fetch::{FetchedCondition, FetchedText},
     layers::{DrawRequest, DrawType, Layer},
     line::LineRun,
@@ -22,8 +24,6 @@ use crate::{
     styling::{FloatDecimal, GlyphEntry},
     tess::PathEncoder,
     text3d::{Text3d, Text3dSegment},
-    SegmentStyle, StrokeJoin, Text3dBounds, Text3dDimensionOut, Text3dPlugin, Text3dStyle,
-    TextAtlas, TextAtlasHandle, TextRenderer,
 };
 
 fn default_mesh() -> Mesh {

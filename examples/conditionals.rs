@@ -3,6 +3,7 @@
 use std::num::NonZero;
 
 use bevy::{
+    DefaultPlugins,
     app::{App, Startup, Update},
     asset::Assets,
     camera::Camera2d,
@@ -13,11 +14,10 @@ use bevy::{
     mesh::Mesh2d,
     prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
-    DefaultPlugins,
 };
 use bevy_rectray::{
-    layout::{Container, LayoutObject, ParagraphLayout, Rev, X, Y},
     Dimension, RectrayFrame, RectrayPlugin, RectrayWindow, Transform2D,
+    layout::{Container, LayoutObject, ParagraphLayout, Rev, X, Y},
 };
 use bevy_rich_text3d::{
     ConditionOutput, LoadFonts, ParseBuilder, Text3d, Text3dDimensionOut, Text3dPlugin,

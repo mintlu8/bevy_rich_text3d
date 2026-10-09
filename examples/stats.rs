@@ -1,9 +1,10 @@
 use bevy::{
+    DefaultPlugins,
     app::{App, PostStartup, Startup, Update},
     asset::Assets,
     color::{Color, Srgba},
     ecs::{change_detection::DetectChanges, query::With, world::Ref},
-    input::{keyboard::KeyCode, ButtonInput},
+    input::{ButtonInput, keyboard::KeyCode},
     light::GlobalAmbientLight,
     math::Vec3,
     pbr::{MeshMaterial3d, StandardMaterial},
@@ -12,7 +13,6 @@ use bevy::{
         Projection, Query, Res, ResMut, Resource, Transform,
     },
     time::{Time, Virtual},
-    DefaultPlugins,
 };
 use bevy_rich_text3d::{
     ConditionOutput, FetchedCondition, FetchedText, ParseBuilder, SegmentStyle, SharedSegment,
@@ -260,6 +260,7 @@ fn randomize_stats(
 #[require(FetchedText)]
 struct FetchStat(Entity, Stat, i32);
 
+#[allow(clippy::collapsible_if)]
 fn fetch_stats(mut query: Query<(&FetchStat, &mut FetchedText)>, stats: Query<Ref<StatMap>>) {
     for (fetch, string) in &mut query {
         if let Ok(unit) = stats.get(fetch.0) {

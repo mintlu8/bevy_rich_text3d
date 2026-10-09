@@ -3,13 +3,13 @@ use std::{cell::OnceCell, iter::repeat_n, num::NonZeroU32, ops::Range, str::From
 use bevy::log::warn;
 
 use crate::{
+    SegmentSize, SegmentStyle, Text3d, Text3dSegment,
     color_table::parse_color,
     misc::{Style, Weight},
     parse_util::{
         ConditionOutput, Flip, ParseBuilder, ParseConditionFn, ParseError, ParseErrorType,
         ParseStyleFn, ParseValueFn,
     },
-    SegmentSize, SegmentStyle, Text3d, Text3dSegment,
 };
 
 fn trim_mut(s: &mut String) {
