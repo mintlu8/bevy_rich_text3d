@@ -1,12 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy::{
-    asset::{Asset, Assets, Handle, RenderAssetUsages, uuid::Uuid},
-    ecs::component::Component,
-    image::Image,
-    log::{info, warn_once},
-    math::{IRect, IVec2, Vec2},
-    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
+    asset::{Asset, Assets, Handle, RenderAssetUsages, uuid::Uuid}, ecs::component::Component, image::{Image, ImageFilterMode}, log::{info, warn_once}, math::{IRect, IVec2, Vec2}, render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 use rustc_hash::FxHashMap;
 
@@ -49,7 +44,7 @@ impl TextAtlas {
 
     /// Create an empty [`Image`] filled with transparent white `(255, 255, 255, 0)`.
     pub fn empty_image(width: usize, height: usize) -> Image {
-        Image::new(
+        let mut im = Image::new(
             Extent3d {
                 width: width as u32,
                 height: height as u32,
@@ -59,7 +54,26 @@ impl TextAtlas {
             vec![[255, 255, 255, 0]; width * height].into_flattened(),
             TextureFormat::Rgba8Unorm,
             RenderAssetUsages::all(),
-        )
+        );
+        im.sampler.get_or_init_descriptor().set_filter(ImageFilterMode::Nearest);
+        im
+    }
+
+    /// Create an empty [`Image`] filled with transparent white `(255, 255, 255, 0)`, using the linear sampler.
+    pub fn empty_image_linear(width: usize, height: usize) -> Image {
+        let mut im = Image::new(
+            Extent3d {
+                width: width as u32,
+                height: height as u32,
+                depth_or_array_layers: 1,
+            },
+            TextureDimension::D2,
+            vec![[255, 255, 255, 0]; width * height].into_flattened(),
+            TextureFormat::Rgba8Unorm,
+            RenderAssetUsages::all(),
+        );
+        im.sampler.get_or_init_descriptor().set_filter(ImageFilterMode::Linear);
+        im
     }
 
     /// Allocate space for a glyph, resizes if necessary but does not draw.
