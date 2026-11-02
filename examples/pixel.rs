@@ -47,7 +47,7 @@ fn setup(
         Text3d::new("Hello World!"),
         Text3dStyle {
             size: 64.,
-            font: "Pixelify".into(),
+            font: "Pixelify Sans".into(),
             //stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
             stroke_color: Srgba::BLACK,
