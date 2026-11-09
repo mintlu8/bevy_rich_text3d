@@ -1,7 +1,12 @@
 use std::marker::PhantomData;
 
 use bevy::{
-    asset::{Asset, Assets, Handle, RenderAssetUsages, uuid::Uuid}, ecs::component::Component, image::{Image, ImageFilterMode}, log::{info, warn_once}, math::{IRect, IVec2, Vec2}, render::render_resource::{Extent3d, TextureDimension, TextureFormat},
+    asset::{Asset, Assets, Handle, RenderAssetUsages, uuid::Uuid},
+    ecs::component::Component,
+    image::{Image, ImageFilterMode},
+    log::{info, warn_once},
+    math::{IRect, IVec2, Vec2},
+    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 use rustc_hash::FxHashMap;
 
@@ -55,12 +60,14 @@ impl TextAtlas {
             TextureFormat::Rgba8Unorm,
             RenderAssetUsages::all(),
         );
-        im.sampler.get_or_init_descriptor().set_filter(ImageFilterMode::Nearest);
+        im.sampler
+            .get_or_init_descriptor()
+            .set_filter(ImageFilterMode::Linear);
         im
     }
 
-    /// Create an empty [`Image`] filled with transparent white `(255, 255, 255, 0)`, using the linear sampler.
-    pub fn empty_image_linear(width: usize, height: usize) -> Image {
+    /// Create an empty [`Image`] filled with transparent white `(255, 255, 255, 0)`, using the nearest sampler.
+    pub fn empty_image_nearest(width: usize, height: usize) -> Image {
         let mut im = Image::new(
             Extent3d {
                 width: width as u32,
@@ -72,7 +79,9 @@ impl TextAtlas {
             TextureFormat::Rgba8Unorm,
             RenderAssetUsages::all(),
         );
-        im.sampler.get_or_init_descriptor().set_filter(ImageFilterMode::Linear);
+        im.sampler
+            .get_or_init_descriptor()
+            .set_filter(ImageFilterMode::Nearest);
         im
     }
 
