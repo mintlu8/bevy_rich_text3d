@@ -7,9 +7,7 @@ use bevy::{
     light::GlobalAmbientLight,
     math::Vec3,
     mesh::Mesh2d,
-    prelude::{
-        Commands, OrthographicProjection, Projection, ResMut, Transform,
-    },
+    prelude::{Commands, OrthographicProjection, Projection, ResMut, Transform},
     sprite_render::{AlphaMode2d, ColorMaterial, MeshMaterial2d},
 };
 use bevy_rich_text3d::{LoadFonts, Text3d, Text3dPlugin, Text3dStyle, TextAtlas};
@@ -33,10 +31,7 @@ pub fn main() {
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    mut standard_materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn setup(mut commands: Commands, mut standard_materials: ResMut<Assets<ColorMaterial>>) {
     let mat = standard_materials.add(ColorMaterial {
         texture: Some(TextAtlas::DEFAULT_IMAGE.clone()),
         alpha_mode: AlphaMode2d::Mask(0.5),
@@ -47,7 +42,7 @@ fn setup(
         Text3d::new("Hello World!"),
         Text3dStyle {
             size: 64.,
-            font: "Pixelify".into(),
+            font: "Pixelify Sans".into(),
             //stroke: NonZero::new(10),
             color: Srgba::new(0., 1., 1., 1.),
             stroke_color: Srgba::BLACK,

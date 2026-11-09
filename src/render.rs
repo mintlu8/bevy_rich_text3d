@@ -93,7 +93,7 @@ pub fn text_render(
         return;
     };
     let mut redraw = false;
-    if font_system.is_changed() {
+    if font_system.is_changed() || settings.is_changed() {
         redraw = true;
     }
     // Add asynchronously drawn text.
